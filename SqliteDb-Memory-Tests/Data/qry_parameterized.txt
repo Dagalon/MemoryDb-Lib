@@ -1,0 +1,1 @@
+﻿SELECT * FROM TEST_DB.TABLE_PERSONAL_DATA WHERE (id = @id and name = @name)

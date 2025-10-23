@@ -28,4 +28,16 @@
       <ProjectReference Include="..\SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Data\qry_parameterized.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\fake_personal_data.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\fake_personal_data.csv">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
