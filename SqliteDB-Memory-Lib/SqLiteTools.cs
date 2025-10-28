@@ -42,7 +42,7 @@ public static partial class SqLiteLiteTools
             KeeperRegisterIdDataBase.register(path, idDataBase);
         }
 
-        AttachedDataBase(connection, path, idDataBase, false);
+        AttachedDataBase(connection, path, idDataBase);
            
         if (walMode)
         {
@@ -107,43 +107,47 @@ public static partial class SqLiteLiteTools
                 Delimiter = ";"
             };
             var csv = new CsvReader(reader, config);
-           
             csv.Read();
-            csv.ReadHeader();
-            if (csv.HeaderRecord != null)
+            
+            if (!csv.Read())
+                throw new InvalidDataException("Empty CSV file.");
+            
+            var fields = csv.HeaderRecord;
+            
+            if (fields == null || fields.Length == 0)
             {
-                var fields = csv.HeaderRecord.ToList();
-                csv.Read();
+                throw new InvalidDataException("CSV file has no header row.");
+            }
+            
+            csv.Read();
+            var values = new List<List<object>>();
+            var firstRow = fields.Select(field => NetTypeToSqLiteType.StrTryParse(csv.GetField(field))).Select(fieldValue => fieldValue.Item1).ToList();
+            values.Add(firstRow);
            
-                var values = new List<List<object>>();
-                var firstRow = fields.Select(field => NetTypeToSqLiteType.StrTryParse(csv.GetField(field))).Select(fieldValue => fieldValue.Item1).ToList();
+            while (csv.Read())
+            {
+                var row = fields.Select(field => NetTypeToSqLiteType.StrTryParse(csv.GetField(field))).Select(fieldValue => fieldValue.Item1).ToList();
 
-                values.Add(firstRow);
+                values.Add(row);
+            }
            
-                while (csv.Read())
-                {
-                    var row = fields.Select(field => NetTypeToSqLiteType.StrTryParse(csv.GetField(field))).Select(fieldValue => fieldValue.Item1).ToList();
-
-                    values.Add(row);
-                }
-           
-                reader.Close();
+            reader.Close();
          
            
-                var noRows = values.Count;
-                var noColumns = values[0].Count;
-                var arrayValues = new object[noRows, noColumns];
-                for (var i = 0; i < noRows; i++)
+            var noRows = values.Count;
+            var noColumns = values[0].Count;
+            var arrayValues = new object[noRows, noColumns];
+            for (var i = 0; i < noRows; i++)
+            {
+                for (var j = 0; j < noColumns; j++)
                 {
-                    for (var j = 0; j < noColumns; j++)
-                    {
-                        arrayValues[i, j] = values[i][j];
-                    }
+                    arrayValues[i, j] = values[i][j];
                 }
-
-                DropTable(db, idDataBase, idTable);
-                CreateTable(db, idDataBase, idTable, fields.Select((field, i)=>field.ToDbString("[","]")).ToList(), arrayValues);
             }
+
+            DropTable(db, idDataBase, idTable);
+            CreateTable(db, idDataBase, idTable, fields.Select((field, i)=>field.ToDbString("[","]")).ToList(), arrayValues);
+            
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
@@ -156,7 +160,8 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Inserts rows into the target table by using the contents of a CSV file.
     /// </summary>
-    public static EnumsSqliteMemory.Output Insert(SqliteConnection db, string idDataBase, string idTable, string pathCsvValues, string extraEnd)
+    public static EnumsSqliteMemory.Output Insert(SqliteConnection db, string idDataBase, string idTable, 
+        string pathCsvValues, string extraEnd, string delimiter=";")
     {
         if (string.IsNullOrEmpty(pathCsvValues))
         {
@@ -174,7 +179,7 @@ public static partial class SqLiteLiteTools
             var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
-                Delimiter = ";"
+                Delimiter = delimiter
             };
             var csv = new CsvReader(reader, config);
 
