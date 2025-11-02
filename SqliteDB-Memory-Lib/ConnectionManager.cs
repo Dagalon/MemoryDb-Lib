@@ -131,42 +131,6 @@ namespace SqliteDB_Memory_Lib
         }
     }
 
-    public sealed class CounterExecutionFunctions
-    {
-        private static readonly Dictionary<string, int> _mapCounter = new();
-
-        private CounterExecutionFunctions() { }
-
-        /// <summary>
-        /// Increments the execution counter for the supplied identifier and returns its new value.
-        /// </summary>
-        public static int GetCounter(string idFunction)
-        {
-            if (_mapCounter.ContainsKey(idFunction))
-            {
-                _mapCounter[idFunction] += 1;
-                return _mapCounter[idFunction];
-            }
-
-            return _mapCounter[idFunction] = 1;
-        }
-
-        /// <summary>
-        /// Retrieves the current counter for the supplied identifier without increasing it.
-        /// </summary>
-        public static int GetCurrentCounter(string idFunction)
-        {
-            if (_mapCounter.ContainsKey(idFunction))
-            {
-                return _mapCounter[idFunction];
-            }
-
-            return 0;
-            
-        }
-
-    }
-    
     public sealed class KeeperRegisterIdDataBase
     {
         private static readonly Dictionary<string, string> _mapIdDataBase = new Dictionary<string, string>();
