@@ -40,7 +40,7 @@ public class ExecuteQueries
 
         // Query 
         var qry = @"SELECT ObjectType, Amount FROM DeliveryList WHERE ObjectType = 'Banana'";
-        var result = GeneralTools.Execute<BsonDocument>(manager, idDataBase, qry);
+        var result = LiteDb_Memory_Lib.GeneralTools.Execute<BsonDocument>(manager, idDataBase, qry);
 
         var output = new BsonDocument()
         {

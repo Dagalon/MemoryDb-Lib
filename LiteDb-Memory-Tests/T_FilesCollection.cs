@@ -4,7 +4,7 @@ using LiteDb_Memory_Lib;
 
 namespace LiteDb_Memory_Tests
 {
-    internal class FilesCollection
+    public class FilesCollection
     {
 
         [SetUp]
@@ -31,14 +31,14 @@ namespace LiteDb_Memory_Tests
             manager.CreateCollection<BsonDocument>(aliasDb, collection);
             
             var listCollection = manager.GetCollectionNames(aliasDb);
-            Assert.That(listCollection.Contains(collection));
+            Assert.That(listCollection, Does.Contain(collection));
             
             // Upload a file
             var checkUploadFile = FileStorageTools.Upload(manager, aliasDb, collection, fileName, Path.Combine(rootPath, $"{fileName}.png"));
 
             // Find the document with a file
             var image = FileStorageTools.Find(manager, aliasDb, collection, fileName);
-            Assert.That(image is not null);
+            Assert.That(image, Is.Not.EqualTo(null));
 
             // Find save database
             var isClose = manager.Close(aliasDb, pathToKeepDataBase);
@@ -47,13 +47,13 @@ namespace LiteDb_Memory_Tests
             var result = manager.CreateDatabase(aliasDb, pathToKeepDataBase, isShared: true);
             listCollection = manager.GetCollectionNames(aliasDb);
 
-            Assert.That(listCollection.Contains(collection));
-            Assert.That(listCollection.Contains($"{collection}chunk"));
+            Assert.That(listCollection, Does.Contain(collection));
+            Assert.That(listCollection, Does.Contain($"{collection}chunk"));
 
             // Check if a file exists from a database-loaded form file in the disk
             image = FileStorageTools.Find(manager, aliasDb, collection, fileName);
 
-            Assert.That(image is not null);
+            Assert.That(image, Is.Not.EqualTo(null));
         }
 
     }
