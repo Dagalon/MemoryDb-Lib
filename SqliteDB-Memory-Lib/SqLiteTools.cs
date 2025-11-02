@@ -106,12 +106,13 @@ public static partial class SqLiteLiteTools
                 HasHeaderRecord = true,
                 Delimiter = ";"
             };
+            
             var csv = new CsvReader(reader, config);
-            csv.Read();
             
             if (!csv.Read())
                 throw new InvalidDataException("Empty CSV file.");
-            
+
+            csv.ReadHeader();
             var fields = csv.HeaderRecord;
             
             if (fields == null || fields.Length == 0)
@@ -148,12 +149,11 @@ public static partial class SqLiteLiteTools
             DropTable(db, idDataBase, idTable);
             CreateTable(db, idDataBase, idTable, fields.Select((field, i)=>field.ToDbString("[","]")).ToList(), arrayValues);
             
-            
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch(Exception ex)
         {
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return EnumsSqliteMemory.Output.ERROR_TO_DEBUG;
         }
     }
 

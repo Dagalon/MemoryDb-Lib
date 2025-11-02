@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using System.Runtime.InteropServices;
+using LiteDB;
 using LiteDb_Memory_Lib;
 
 namespace LiteDb_Memory_Tests
@@ -15,7 +16,8 @@ namespace LiteDb_Memory_Tests
         public void T_Upload_File()
         {
             // Instance manager connections
-            const string rootPath = "C:\\GitRepositories\\c#\\LiteDb-Memory-Lib\\LiteDb-Memory-Tests\\Data";
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var rootPath = Path.Combine(basePath,"Data");
             const string aliasDb = "Test-db-Images";
             const string collection = "Images";
             const string fileName = "file-test";
@@ -24,7 +26,8 @@ namespace LiteDb_Memory_Tests
 
             var manager = ConnectionManager.Instance();
             var checkDataBaseIsCreated = manager.CreateDatabase(aliasDb, isShared: true);
-
+            Assert.That(checkDataBaseIsCreated, Is.EqualTo(EnumsLiteDbMemory.Output.SUCCESS)); 
+            
             manager.CreateCollection<BsonDocument>(aliasDb, collection);
             
             var listCollection = manager.GetCollectionNames(aliasDb);

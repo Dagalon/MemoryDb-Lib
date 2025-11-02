@@ -10,7 +10,8 @@ public static class EnumsSqliteMemory
         THERE_EXISTS_DATABASE=4,
         PATH_IS_NULL_OR_EMPTY=5,
         COLLECTION_NOT_FOUND=6,
-        PATH_AND_ID_IS_NULL_OR_EMPTY=7
+        PATH_AND_ID_IS_NULL_OR_EMPTY=7,
+        ERROR_TO_DEBUG = 8,
     }
 
 
