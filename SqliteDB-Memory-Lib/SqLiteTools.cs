@@ -39,7 +39,7 @@ public static partial class SqLiteLiteTools
 
         if (!string.IsNullOrEmpty(path))
         {
-            KeeperRegisterIdDataBase.register(path, idDataBase);
+            KeeperRegisterIdDataBase.Register(path, idDataBase);
         }
 
         AttachedDataBase(connection, path, idDataBase);

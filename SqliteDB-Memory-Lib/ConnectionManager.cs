@@ -170,7 +170,7 @@ namespace SqliteDB_Memory_Lib
         /// <summary>
         /// Registers the relationship between a database file path and its identifier.
         /// </summary>
-        public static void register(string path, string idDataBase)
+        public static void Register(string path, string idDataBase)
         {
             if (!CheckPathDataBase(path))
             {
@@ -181,7 +181,7 @@ namespace SqliteDB_Memory_Lib
         /// <summary>
         /// Removes the record for the supplied database identifier.
         /// </summary>
-        public static void deleteRegister(string idDataBase)
+        public static void DeleteRegister(string idDataBase)
         {
             var keepIdDataBases = _mapIdDataBase.Values.ToList();
             int indexValues = keepIdDataBases.IndexOf(idDataBase);
