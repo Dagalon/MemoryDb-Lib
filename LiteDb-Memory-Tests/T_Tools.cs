@@ -30,7 +30,7 @@ public class GeneralTools
         const string idCollection = "PERSONAL_DATA";
         var manager = ConnectionManager.Instance();
         
-        var checkCreatedDataBase = manager.CreateDatabase(aliasDb, isShared: true);
+        var checkCreatedDataBase = manager.CreateDatabase(aliasDb, isShared: true, substituteIfExist: true);
         Assert.That(checkCreatedDataBase, Is.EqualTo(EnumsLiteDbMemory.Output.SUCCESS));
         
         var checkCreateCollection = manager.CreateCollection<PersonalData>(aliasDb, idCollection);
