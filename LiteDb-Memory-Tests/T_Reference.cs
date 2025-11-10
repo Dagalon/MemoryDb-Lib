@@ -4,13 +4,43 @@ using LiteDB;
 
 namespace LiteDb_Memory_Tests;
 
+#region Data-Test FindOne
+public struct Phone
+{
+    public int Prefix { get; set; }
+    public long Number { get; set; } 
+    
+    public Phone(int p, int n)
+    {
+        Prefix = p;
+        Number = n;
+    }
+    
+    public long GetPhoneNumber()
+    {
+        return long.Parse($"00{Prefix}{Number}");
+    }
+}
+public struct Customer(ObjectId customerId, string name, DateTime createdDate, List<Phone> phones, bool isActive)
+{
+    [BsonId]
+    public ObjectId CustomerId { get; set; } = customerId;
+    public string Name { get; set; } = name;
+    public DateTime CreateDate { get; set; } = createdDate;
+    public List<Phone> Phones { get; set; } = phones;
+    public bool IsActive { get; set; } = isActive;
+}
+
 public struct Order
 {
+    [BsonId]
     public ObjectId OrderId { get; set; }
     
     [BsonRef("Customers")]
     public Customer Customer { get; set; }
 }
+
+#endregion
 
 public class CrossReference
 {
@@ -30,21 +60,21 @@ public class CrossReference
         manager.CreateDatabase(idDataBase);
 
         // Create list customers 
-        var customers = new List<Customer>()
+        var customers = new List<Customer>
         {
-            new Customer()
+            new ()
             {
                 CustomerId = ObjectId.NewObjectId(), CreateDate = new DateTime(2000, 1, 1),
                 IsActive = true, Name = "David", Phones = [new Phone(34, 658566844)]
             },
 
-            new Customer()
+            new ()
             {
                 CustomerId = ObjectId.NewObjectId(), CreateDate = new DateTime(2004, 3, 27),
                 IsActive = true, Name = "Martin", Phones = [new Phone(34, 658576842)]
             },
 
-            new Customer()
+            new ()
             {
                 CustomerId = ObjectId.NewObjectId(), CreateDate = new DateTime(2004, 3, 27),
                 IsActive = true, Name = "Nerea", Phones = [new Phone(34, 645576842)]

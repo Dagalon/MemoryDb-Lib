@@ -42,6 +42,6 @@ public class GeneralTools
 
         var indexQry = @"SELECT * FROM $indexes WHERE collection ='PERSONAL_DATA'";
         var result = LiteDb_Memory_Lib.GeneralTools.Execute<BsonDocument>(manager, aliasDb, indexQry);
-        Assert.That(result[0]["expr"][1]["name"].AsString, Is.EqualTo("Identifier"));
+        Assert.That(result?[0]["expr"][1]["name"].AsString, Is.EqualTo("Identifier"));
     }
 }
