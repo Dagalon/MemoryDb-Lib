@@ -6,4 +6,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <PropertyGroup Label="Packaging">
+        <PackageId>QuantLand.SqliteDbMemory</PackageId>
+        <Title>SQLite in-memory helpers</Title>
+        <Description>Wrapper utilities for Microsoft.Data.Sqlite that simplify creating and seeding shared in-memory SQLite databases.</Description>
+        <PackageTags>SQLite;Sqlite;InMemory;Testing;Database;Helpers</PackageTags>
+        <PackageProjectUrl>https://github.com/QuantLand/MemoryDb-Lib</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/QuantLand/MemoryDb-Lib</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
 </Project>

@@ -15,6 +15,7 @@ Both libraries follow the same philosophy: offer an ergonomic API to create name
 - [Getting started](#getting-started)
   - [Build the solution](#build-the-solution)
   - [Reference the projects](#reference-the-projects)
+  - [Create NuGet packages](#create-nuget-packages)
 - [LiteDb-Memory-Lib quickstart](#litedb-memory-lib-quickstart)
   - [Create and seed an in-memory database](#create-and-seed-an-in-memory-database)
   - [Load seed data from JSON](#load-seed-data-from-json)
@@ -73,6 +74,15 @@ dotnet add <your-project> reference ../LiteDb-Memory-Lib/LiteDb-Memory-Lib/LiteD
 
 # SQLite helper library
 dotnet add <your-project> reference ../LiteDb-Memory-Lib/SqliteDB-Memory-Lib/SqliteDB-Memory-Lib.csproj
+```
+
+### Create NuGet packages
+
+Both helper libraries are already configured to produce NuGet packages (including symbol/source packages). Run the following co
+mmand from the repository root to build Release binaries and drop the `.nupkg` files inside `./artifacts`:
+
+```bash
+dotnet pack MSBuild/MemoryDb-Lib.sln -c Release
 ```
 
 ## LiteDb-Memory-Lib quickstart

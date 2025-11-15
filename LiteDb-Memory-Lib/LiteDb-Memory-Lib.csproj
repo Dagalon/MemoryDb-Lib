@@ -6,4 +6,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <PropertyGroup Label="Packaging">
+        <PackageId>QuantLand.LiteDbMemory</PackageId>
+        <Title>LiteDB in-memory helpers</Title>
+        <Description>Helpers to spin up, seed, query, and persist LiteDB in-memory databases for tests and prototypes.</Description>
+        <PackageTags>LiteDB;InMemory;Testing;Database;Helpers</PackageTags>
+        <PackageProjectUrl>https://github.com/QuantLand/MemoryDb-Lib</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/QuantLand/MemoryDb-Lib</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
 </Project>
