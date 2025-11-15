@@ -1,6 +1,6 @@
 # MemoryDb-Lib
 
-A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, and prototypes. The repository currently contains two .NET 9 class libraries:
+A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, and prototypes. The repository currently contains two .NET 8 class libraries:
 
 - **LiteDb-Memory-Lib** – a façade over [LiteDB](https://www.litedb.org/) that keeps track of in-memory databases and exposes utility helpers for seeding data, executing ad-hoc queries, and working with LiteDB file storage.
 - **SqliteDB-Memory-Lib** – a lightweight wrapper around the in-memory mode of Microsoft.Data.Sqlite with helpers to seed tables, execute SQL scripts, and map query results into strongly-typed objects.
@@ -48,7 +48,7 @@ LiteDb-Memory-Lib/
 
 ## Requirements
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download)
 - [LiteDB](https://www.nuget.org/packages/LiteDB) (transitive dependency of LiteDb-Memory-Lib)
 - [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) (used for JSON seeding helpers)
 - [Microsoft.Data.Sqlite](https://www.nuget.org/packages/Microsoft.Data.Sqlite) (used by SqliteDB-Memory-Lib)

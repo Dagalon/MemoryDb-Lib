@@ -10,7 +10,7 @@ assembly. Install the package when you want the full toolset without juggling mu
  dotnet add package MemoryDb.Lib --prerelease
 ```
 
-The package targets **.NET 9.0** and exposes the following namespaces:
+The package targets **.NET 8.0** and exposes the following namespaces:
 
 - `LiteDb_Memory_Lib.*`
 - `SqliteDB_Memory_Lib.*`
