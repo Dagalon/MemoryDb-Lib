@@ -4,15 +4,26 @@
     <RootNamespace>MemoryDb_Lib</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>David Garcia Lorite</Authors>
+    <Company>QuantLand</Company>
     <PackageId>MemoryDb.Lib</PackageId>
     <Title>MemoryDb unified helpers</Title>
     <Description>A single class library that bundles the LiteDB and SQLite in-memory helpers exposed in this repository.</Description>
+    <PackageTags>LiteDB;SQLite;InMemory Database;Testing;Utilities</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/QTLando/MemoryDb-Lib</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageOutputPath>../artifacts</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="../LiteDb-Memory-Lib/*.cs" Link="LiteDb/%(Filename)%(Extension)" />
     <Compile Include="../SqliteDB-Memory-Lib/*.cs" Link="Sqlite/%(Filename)%(Extension)" />
+    <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,37 @@
+name: Pack MemoryDb.Lib
+
+on:
+  push:
+    branches:
+      - main
+      - work
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          include-prerelease: true
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Pack MemoryDb.Lib
+        run: dotnet pack MemoryDb.Lib/MemoryDb.Lib.csproj -c Release -o artifacts
+
+      - name: Upload NuGet artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: memorydb-lib-nuget
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error

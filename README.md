@@ -84,7 +84,22 @@ If you prefer to consume both helper libraries as a single assembly, build the a
 dotnet pack MemoryDb.Lib/MemoryDb.Lib.csproj -c Release
 ```
 
-The resulting package exposes all the types that live in the two original projects, so you can reference a single DLL from test suites or publish the generated `.nupkg` to an internal feed.
+The resulting package exposes all the types that live in the two original projects, so you can reference a single DLL from test suites or publish the generated `.nupkg` to an internal feed. The pack target also emits a matching `.snupkg` file that contains symbols for debugging purposes.
+
+### Download a prebuilt package
+
+If you do not have the .NET SDK installed locally you can still grab the latest NuGet package from the CI workflow:
+
+1. Navigate to the [**Pack MemoryDb.Lib** workflow](https://github.com/QTLando/MemoryDb-Lib/actions/workflows/pack-memorydb-lib.yml).
+2. Open the most recent successful run on the `main` branch (or trigger a manual run via **Run workflow**).
+3. Download the `memorydb-lib-nuget` artifact which includes both `.nupkg` and `.snupkg` files from the `artifacts/` folder.
+4. Push the downloaded package to your preferred NuGet feed:
+
+   ```bash
+   dotnet nuget push MemoryDb.Lib.*.nupkg --api-key <token> --source <nuget-source>
+   ```
+
+Both artifacts contain the unified helpers from LiteDB and SQLite projects, so a single package reference lights up all available APIs.
 
 ## LiteDb-Memory-Lib quickstart
 
