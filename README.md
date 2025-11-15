@@ -75,6 +75,17 @@ dotnet add <your-project> reference ../LiteDb-Memory-Lib/LiteDb-Memory-Lib/LiteD
 dotnet add <your-project> reference ../LiteDb-Memory-Lib/SqliteDB-Memory-Lib/SqliteDB-Memory-Lib.csproj
 ```
 
+### Generate a single DLL or NuGet package
+
+If you prefer to consume both helper libraries as a single assembly, build the aggregated project located in `MemoryDb.Lib`.
+
+```bash
+# Produce MemoryDb.Lib.dll and a MemoryDb.Lib.<version>.nupkg file in ./artifacts
+dotnet pack MemoryDb.Lib/MemoryDb.Lib.csproj -c Release
+```
+
+The resulting package exposes all the types that live in the two original projects, so you can reference a single DLL from test suites or publish the generated `.nupkg` to an internal feed.
+
 ## LiteDb-Memory-Lib quickstart
 
 ### Create and seed an in-memory database

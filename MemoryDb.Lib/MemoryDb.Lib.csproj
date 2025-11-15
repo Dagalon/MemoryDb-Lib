@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>MemoryDb_Lib</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MemoryDb.Lib</PackageId>
+    <Title>MemoryDb unified helpers</Title>
+    <Description>A single class library that bundles the LiteDB and SQLite in-memory helpers exposed in this repository.</Description>
+    <PackageOutputPath>../artifacts</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../LiteDb-Memory-Lib/*.cs" Link="LiteDb/%(Filename)%(Extension)" />
+    <Compile Include="../SqliteDB-Memory-Lib/*.cs" Link="Sqlite/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
