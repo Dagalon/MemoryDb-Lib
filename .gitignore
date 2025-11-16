@@ -14,3 +14,7 @@ MSBuild/LiteDb-Memory-Lib.sln.DotSettings.user
 /SqliteDB-Memory-Tests/bin
 /SqliteDB-Memory-Tests/.idea
 /MemoryDb-Lib/obj
+/MSBuild/Memory-Db/obj
+/MSBuild/Memory-Db/bin
+/Memory-Db/bin
+/Memory-Db/obj
