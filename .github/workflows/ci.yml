@@ -23,7 +23,7 @@ jobs:
 
       - name: Build
         run: |
-          msbuild MSBuild/MemoryDb-Lib.sln ^
+          dotnet build MSBuild/MemoryDb-Lib.sln ^
             /p:Configuration=Release ^
             /p:Platform="Any CPU"
 
