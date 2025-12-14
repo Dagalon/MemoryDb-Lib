@@ -61,7 +61,7 @@ jobs:
 
       - name: Pack NuGet
         run: |
-          dotnet pack MSBuild/Memory-Db/Memory-Db.csproj ^
+          dotnet pack Memory-Db/Memory-Db.csproj ^
             --configuration Release ^
             --no-build ^
             -o ./Artifacts
