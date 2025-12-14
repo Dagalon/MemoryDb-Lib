@@ -31,17 +31,17 @@ jobs:
           arch: ${{ matrix.platform }}
 
       - name: Restore
-        run: dotnet restore MemoryDb-Lib.sln
+        run: dotnet restore MemoryDb-Lib/MemoryDb-Lib.sln
 
       - name: Build
         run: |
-          msbuild MemoryDb-Lib.sln ^
+          msbuild MemoryDb-Lib/MemoryDb-Lib.sln ^
             /p:Configuration=Release ^
             /p:Platform=${{ matrix.platform }}
 
       - name: Run NUnit tests
         run: |
-          dotnet test MemoryDb-Lib.sln ^
+          dotnet test MemoryDb-Lib/MemoryDb-Lib.sln ^
             --configuration Release ^
             --no-build
 
@@ -49,7 +49,7 @@ jobs:
       - name: Pack NuGet
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet pack MemoryDb-Lib.sln ^
+          dotnet pack MemoryDb-Lib/MemoryDb-Lib.sln ^
             --configuration Release ^
             --no-build ^
             -o ./artifacts
