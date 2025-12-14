@@ -35,13 +35,13 @@ jobs:
 
       - name: Build
         run: |
-          msbuild MemoryDb-Lib/MemoryDb-Lib.sln ^
+          msbuild Memory-Db/MemoryDb-Lib.sln ^
             /p:Configuration=Release ^
             /p:Platform=${{ matrix.platform }}
 
       - name: Run NUnit tests
         run: |
-          dotnet test MemoryDb-Lib/MemoryDb-Lib.sln ^
+          dotnet test Memory-Db/MemoryDb-Lib.sln ^
             --configuration Release ^
             --no-build
 
@@ -49,7 +49,7 @@ jobs:
       - name: Pack NuGet
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet pack MemoryDb-Lib/MemoryDb-Lib.sln ^
+          dotnet pack Memory-Db/MemoryDb-Lib.sln ^
             --configuration Release ^
             --no-build ^
             -o ./artifacts
@@ -58,7 +58,7 @@ jobs:
       - name: Publish NuGet package
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push ./artifacts/*.nupkg ^
+          dotnet nuget push ./Artifacts/*.nupkg ^
             --api-key ${{ secrets.NUGET_API_KEY }} ^
             --source https://api.nuget.org/v3/index.json ^
             --skip-duplicate
