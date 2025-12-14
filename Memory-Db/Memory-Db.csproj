@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageId>Memory-Db</PackageId>
+        <PackageId>Memory.Db</PackageId>
         <Version>1.0.0</Version>
         <Authors>Dagalon</Authors>
-        <Description>A collection of helper libraries that make it simple to spin up disposable, in-memory database 
-            engines for local development, automated tests, and prototypes.</Description>
-        <PackageOutputPath>$(MSBuildProjectDirectory)/../Artifactory</PackageOutputPath>
+        <Description>
+            A collection of helper libraries that make it simple to spin up disposable,
+            in-memory database engines for local development, automated tests, and prototypes.
+        </Description>
+
         <RepositoryUrl>https://github.com/Dagalon/MemoryDb-Lib</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\LiteDb-Memory-Lib\bin\$(Configuration)\$(TargetFramework)\LiteDb-Memory-Lib.dll"
-              Pack="true"
-              PackagePath="lib/$(TargetFramework)/" />
-
-        <None Include="..\SqliteDB-Memory-Lib\bin\$(Configuration)\$(TargetFramework)\SqliteDB-Memory-Lib.dll"
-              Pack="true"
-              PackagePath="lib/$(TargetFramework)/" />
+        <ProjectReference Include="..\LiteDb-Memory-Lib\LiteDb-Memory-Lib.csproj" />
+        <ProjectReference Include="..\SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj" />
     </ItemGroup>
 
 </Project>
