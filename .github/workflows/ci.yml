@@ -22,16 +22,10 @@ jobs:
         run: dotnet restore MSBuild/MemoryDb-Lib.sln
 
       - name: Build
-        run: |
-          dotnet build MSBuild/MemoryDb-Lib.sln ^
-            /p:Configuration=Release ^
-            /p:Platform="Any CPU"
+        run: dotnet build MSBuild/MemoryDb-Lib.sln --configuration Release --no-restore
 
       - name: Run NUnit tests
-        run: |
-          dotnet test MSBuild/MemoryDb-Lib.sln ^
-            --configuration Release ^
-            --no-build
+        run: dotnet test MSBuild/MemoryDb-Lib.sln --configuration Release --no-build
 
   pack-and-publish:
     if: github.ref == 'refs/heads/main'
@@ -50,11 +44,7 @@ jobs:
         run: dotnet restore MSBuild/MemoryDb-Lib.sln
 
       - name: Pack NuGet
-        run: |
-          dotnet pack MSBuild/Memory-Db/Memory-Db.csproj ^
-            --configuration Release ^
-            --no-build ^
-            -o ./Artifacts
+        run: dotnet pack MSBuild/Memory-Db/Memory-Db.csproj --configuration Release --no-build -o ./Artifacts
 
       - name: Publish NuGet package
         run: |
