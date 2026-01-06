@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
         <PackageId>Memory.Db</PackageId>
         <Version>1.0.0</Version>
         <Authors>Dagalon</Authors>
