@@ -44,7 +44,7 @@ jobs:
         run: dotnet restore MSBuild/MemoryDb-Lib.sln
 
       - name: Pack NuGet
-        run: dotnet pack MSBuild/Memory-Db/Memory-Db.csproj --configuration Release --no-build -o ./Artifacts
+        run: dotnet pack Memory-Db/Memory-Db.csproj --configuration Release --no-build -o ./Artifacts
 
       - name: Publish NuGet package
         run: |
