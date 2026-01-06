@@ -48,7 +48,4 @@ jobs:
 
       - name: Publish NuGet package
         run: |
-          dotnet nuget push ./Artifacts/*.nupkg ^
-            --api-key ${{ secrets.NUGET_API_KEY }} ^
-            --source https://api.nuget.org/v3/index.json ^
-            --skip-duplicate
+          dotnet nuget push ./Artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
