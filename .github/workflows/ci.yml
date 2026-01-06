@@ -9,25 +9,18 @@ on:
 jobs:
   build-test:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore
-        run: dotnet restore MSBuild/MemoryDb-Lib.sln
+      - run: dotnet restore MSBuild/MemoryDb-Lib.sln
+      - run: dotnet build MSBuild/MemoryDb-Lib.sln -c Release --no-restore
+      - run: dotnet test MSBuild/MemoryDb-Lib.sln -c Release --no-build
 
-      - name: Build
-        run: dotnet build MSBuild/MemoryDb-Lib.sln --configuration Release --no-restore
-
-      - name: Run NUnit tests
-        run: dotnet test MSBuild/MemoryDb-Lib.sln --configuration Release --no-build
-
-  pack-and-publish:
+  pack:
     if: github.ref == 'refs/heads/main'
     needs: build-test
     runs-on: windows-latest
@@ -35,19 +28,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore
-        run: dotnet restore MSBuild/MemoryDb-Lib.sln
-
       - name: Pack NuGet
-        run: dotnet pack MSBuild/MemoryDb-Lib.sln -c Release -o ./Artifacts
-        
+        run: dotnet pack Memory-Db/Memory-Db.csproj -c Release -o ./Artifacts
+
       - name: Verify package
         run: dir Artifacts
 
-      - name: Publish NuGet package
-        run: dotnet nuget push ./Artifacts/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: ./Artifacts/*.nupkg
