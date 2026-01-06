@@ -44,8 +44,7 @@ jobs:
         run: dotnet restore MSBuild/MemoryDb-Lib.sln
 
       - name: Pack NuGet
-        run: dotnet build MSBuild/MemoryDb-Lib.sln --configuration Release --no-restore
+        run: dotnet pack MSBuild/MemoryDb-Lib.sln -c Release -o ./Artifacts
 
       - name: Publish NuGet package
-        run: |
-          dotnet nuget push ./Artifacts/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        run: dotnet nuget push ./Artifacts/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
