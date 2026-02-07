@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
-        <PackageId>Memory.Db</PackageId>
+        <PackageId>Memory.DB</PackageId>
         <Version>1.0.0</Version>
         <Authors>Dagalon</Authors>
         <Description>
@@ -19,6 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\LiteDb-Memory-Lib\LiteDb-Memory-Lib.csproj" />
         <ProjectReference Include="..\SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj" />
+        <ProjectReference Include="..\DuckDB-Memory-Lib\DuckDB-Memory-Lib.csproj" />
     </ItemGroup>
 
 </Project>

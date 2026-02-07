@@ -2,13 +2,17 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDb-Memory-Lib", "../LiteDb-Memory-Lib/LiteDb-Memory-Lib.csproj", "{303C9297-37FF-4EA1-8EF9-7379081F520C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDb-Memory-Tests", "../LiteDb-Memory-Tests\LiteDb-Memory-Tests.csproj", "{8F2E088B-4389-4FBA-B32F-1437C771B3E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDB-Memory-Tests", "../LiteDB-Memory-Tests\LiteDB-Memory-Tests.csproj", "{8F2E088B-4389-4FBA-B32F-1437C771B3E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteDb-Memory-Lib", "../SqliteDb-Memory-Lib\SqliteDB-Memory-Lib.csproj", "{8E629501-615A-4EAC-A2CF-4E792C99931D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteDB-Memory-Lib", "../SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj", "{8E629501-615A-4EAC-A2CF-4E792C99931D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteDb-Memory-Tests", "..\SqliteDb-Memory-Tests\SqliteDb-Memory-Tests.csproj", "{BF51E2F8-572E-40F4-932B-3B88C3706E95}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteDB-Memory-Tests", "..\SqliteDB-Memory-Tests\SqliteDB-Memory-Tests.csproj", "{BF51E2F8-572E-40F4-932B-3B88C3706E95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Memory-Db", "..\Memory-Db\Memory-Db.csproj", "{297AC4EE-AE5A-4603-BF7F-A5AC239A28DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Memory-DB", "..\Memory-DB\Memory-DB.csproj", "{297AC4EE-AE5A-4603-BF7F-A5AC239A28DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuckDB-Memory-Lib", "..\DuckDB-Memory-Lib\DuckDB-Memory-Lib.csproj", "{5A84D9D5-C29C-49F1-8D51-29A0CD0ECD4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuckDB-Memory-Tests", "..\DuckDB-Memory-Tests\DuckDB-Memory-Tests.csproj", "{21C1E7CB-B900-443C-BE67-D531E7B4EF74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +40,13 @@ Global
 		{297AC4EE-AE5A-4603-BF7F-A5AC239A28DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{297AC4EE-AE5A-4603-BF7F-A5AC239A28DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{297AC4EE-AE5A-4603-BF7F-A5AC239A28DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A84D9D5-C29C-49F1-8D51-29A0CD0ECD4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A84D9D5-C29C-49F1-8D51-29A0CD0ECD4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A84D9D5-C29C-49F1-8D51-29A0CD0ECD4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A84D9D5-C29C-49F1-8D51-29A0CD0ECD4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21C1E7CB-B900-443C-BE67-D531E7B4EF74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21C1E7CB-B900-443C-BE67-D531E7B4EF74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21C1E7CB-B900-443C-BE67-D531E7B4EF74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21C1E7CB-B900-443C-BE67-D531E7B4EF74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

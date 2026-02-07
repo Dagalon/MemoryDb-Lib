@@ -1,15 +1,16 @@
-using Microsoft.Data.Sqlite;
-using System.Data;
+﻿using System.Data;
+using DuckDB.NET.Data;
 
-namespace SqliteDB_Memory_Lib;
+
+namespace DuckDb_Memory_Lib;
 
 public sealed class ConnectionManager
 {
     private static readonly Lazy<ConnectionManager> LazyInstance =
         new(() => new ConnectionManager(), LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private readonly object _syncRoot = new();
-    private readonly Dictionary<string, SqliteConnection> _connections = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lock _syncRoot = new();
+    private readonly Dictionary<string, DuckDBConnection> _connections = new(StringComparer.OrdinalIgnoreCase);
 
     private ConnectionManager() { }
 
@@ -24,7 +25,7 @@ public sealed class ConnectionManager
     /// <summary>
     /// Retrieves an open SQLite connection identified by the provided alias, creating it when necessary.
     /// </summary>
-    public SqliteConnection GetConnection(string? alias = null, string? path = null)
+    public DuckDBConnection GetConnection(string? alias = null, string? path = null)
     {
         var normalizedAlias = NormalizeAlias(alias);
 
@@ -36,7 +37,7 @@ public sealed class ConnectionManager
                 return existingConnection;
             }
 
-            var newConnection = SqLiteLiteTools.GetInstance(path);
+            var newConnection = DuckTools.GetInstance(path);
             EnsureOpen(newConnection);
             _connections[normalizedAlias] = newConnection;
 
@@ -96,7 +97,7 @@ public sealed class ConnectionManager
     /// <summary>
     /// Opens the provided SQLite connection when it is not already open.
     /// </summary>
-    private static void EnsureOpen(SqliteConnection connection)
+    private static void EnsureOpen(DuckDBConnection connection)
     {
         if (connection.State != ConnectionState.Open)
         {
@@ -189,5 +190,3 @@ public sealed class ConnectionManager
 
         }
 }
-
-
