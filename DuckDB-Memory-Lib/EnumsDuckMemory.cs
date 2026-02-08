@@ -1,6 +1,6 @@
-﻿namespace SqliteDB_Memory_Lib;
+﻿namespace DuckDb_Memory_Lib;
 
-public static class EnumsSqliteMemory
+public class EnumsDuckMemory
 {
     public enum Output
     {
@@ -13,8 +13,5 @@ public static class EnumsSqliteMemory
         PATH_AND_ID_IS_NULL_OR_EMPTY=7,
         ERROR_TO_DEBUG = 8,
         ERROR_TO_ATTACHED_DATABASE = 9
-        
     }
-
-
 }

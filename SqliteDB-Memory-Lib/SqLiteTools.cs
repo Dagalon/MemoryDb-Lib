@@ -11,7 +11,8 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Creates or attaches an SQLite database to the provided connection.
     /// </summary>
-    public static EnumsSqliteMemory.Output CreateDatabase(SqliteConnection connection, string? idDataBase, string? path, bool walMode = false, object? dependency = null)
+    public static EnumsSqliteMemory.Output CreateDatabase(SqliteConnection connection, string? idDataBase, string? path, 
+        bool walMode = false)
     {
         var listDataBase = GetListDataBase(connection);
 
@@ -29,7 +30,6 @@ public static partial class SqLiteLiteTools
             }
                    
             idDataBase = Path.GetFileName(path).Split('.')[0];
-
         }
                
         if (path != null && KeeperRegisterIdDataBase.CheckPathDataBase(path))
@@ -42,8 +42,13 @@ public static partial class SqLiteLiteTools
             KeeperRegisterIdDataBase.Register(path, idDataBase);
         }
 
-        AttachedDataBase(connection, path, idDataBase);
-           
+        var attachedOutPut = AttachedDataBase(connection, path, idDataBase);
+
+        if (attachedOutPut == EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE)
+        {
+            return  EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE;
+        }
+
         if (walMode)
         {
             ActivateWalMode(connection);
@@ -303,20 +308,22 @@ public static partial class SqLiteLiteTools
 
             }
 
-            var strConnection = path;
+            var strConnection = string.IsNullOrEmpty(path)?":memory:":path;
             string  attachedQry;
-            if (String.IsNullOrEmpty(aliasDataBase))
+            attachedQry = string.IsNullOrEmpty(aliasDataBase) ? 
+                $"ATTACH '{strConnection}'" : 
+                $"ATTACH '{strConnection}' AS '{aliasDataBase}' ";
+
+            try
             {
-                attachedQry = $"ATTACH '{strConnection}'";
+                var cmd = new SqliteCommand(attachedQry, db);
+                cmd.ExecuteNonQuery();
             }
-            else
+            catch (SqliteException)
             {
-                attachedQry = $"ATTACH '{strConnection}' AS '{aliasDataBase}' ";
+                return EnumsSqliteMemory.Output.DB_NOT_FOUND;
             }
 
-            var cmd = new SqliteCommand(attachedQry, db);
-            cmd.ExecuteNonQuery();
-            
             return EnumsSqliteMemory.Output.SUCCESS;
         }
         catch
