@@ -20,7 +20,7 @@ namespace SqliteDB_Memory_Lib
                 _ when type == typeof(DateTime) => DbType.DateTime,
                 _ when type == typeof(decimal) => DbType.Decimal,
                 _ when type == typeof(byte[]) => DbType.Binary,
-                _ => DbType.String // Valor por defecto
+                _ => DbType.String 
             };
         }
 

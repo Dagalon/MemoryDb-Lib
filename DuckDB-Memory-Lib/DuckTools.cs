@@ -1,4 +1,6 @@
 ﻿using DuckDB.NET.Data;
+using DuckDB.NET.Data.DataChunk.Reader;
+using DuckDB.NET.Data.DataChunk.Writer;
 
 namespace DuckDb_Memory_Lib;
 
@@ -81,7 +83,26 @@ public static class DuckTools
         dataBases.Close();
         return idList;
     }
-    
+
+    /// <summary>
+    /// Apply a user-defined function (UDF).
+    /// </summary>
+
+#pragma warning disable DuckDBNET001
+    public static EnumsDuckMemory.Output ApplyScalarFunction<TInput, TOutput>(
+        DuckDBConnection db,
+        string idFunction,
+        Action<IReadOnlyList<IDuckDBDataReader>, IDuckDBDataWriter, ulong> func)
+    {
+        db.RegisterScalarFunction<TInput, TOutput>(
+            idFunction,
+            func,
+            isPureFunction: true);
+
+        return EnumsDuckMemory.Output.SUCCESS;
+    }
+#pragma warning restore DuckDBNET001
+
     /// <summary>
     /// Attaches an external database file to the provided connection, creating the file when required.
     /// </summary>

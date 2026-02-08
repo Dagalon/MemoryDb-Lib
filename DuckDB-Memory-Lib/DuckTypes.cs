@@ -47,7 +47,7 @@ public static class NetTypeToDuckDbType
         if (bool.TryParse(value, out var boolValue))
             return (boolValue, typeof(bool));
 
-        // Integer hierarchy (prefer smallest safe type)
+        // Integer hierarchy
         if (int.TryParse(value, out var intValue))
             return (intValue, typeof(int));
 
