@@ -36,12 +36,12 @@ public class GeneralTools
         var checkCreateCollection = manager.CreateCollection<PersonalData>(aliasDb, idCollection);
         Assert.That(checkCreateCollection, Is.EqualTo(EnumsLiteDbMemory.Output.SUCCESS));
 
-        var checkCreateIndex = LiteDb_Memory_Lib.GeneralTools.CreateIndex<PersonalData, string>(manager, aliasDb, 
+        var checkCreateIndex = LiteDb_Memory_Lib.LiteDbTools.CreateIndex<PersonalData, string>(manager, aliasDb, 
             idCollection, x  => x.Identifier);
         Assert.That(checkCreateIndex, Is.EqualTo(EnumsLiteDbMemory.Output.SUCCESS));
 
         var indexQry = @"SELECT * FROM $indexes WHERE collection ='PERSONAL_DATA'";
-        var result = LiteDb_Memory_Lib.GeneralTools.Execute<BsonDocument>(manager, aliasDb, indexQry);
+        var result = LiteDb_Memory_Lib.LiteDbTools.Execute<BsonDocument>(manager, aliasDb, indexQry);
         Assert.That(result?[0]["expr"][1]["name"].AsString, Is.EqualTo("Identifier"));
     }
 }

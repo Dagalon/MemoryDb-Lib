@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace LiteDb_Memory_Lib;
 
-public static class Tools
+public static class JsonTools
 {
     /// <summary>
     /// Reads a JSON file from disk and deserializes it into the requested type.

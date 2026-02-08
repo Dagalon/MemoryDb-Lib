@@ -44,12 +44,7 @@ public sealed class ConnectionManager
                 return database;
             }
 
-            if (!createIfMissing)
-            {
-                return null;
-            }
-
-            return CreateInMemoryDatabaseLocked(alias, replaceExisting: false);
+            return !createIfMissing ? null : CreateInMemoryDatabaseLocked(alias, replaceExisting: false);
         }
     }
 
@@ -206,7 +201,7 @@ public sealed class ConnectionManager
             return EnumsLiteDbMemory.Output.DB_NOT_FOUND;
         }
 
-        if (!Tools.TryReadJson<List<T>>(path, out var documents))
+        if (!JsonTools.TryReadJson<List<T>>(path, out var documents))
         {
             return EnumsLiteDbMemory.Output.PATH_NOT_FOUND;
         }

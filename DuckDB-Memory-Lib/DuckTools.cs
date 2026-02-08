@@ -85,11 +85,11 @@ public static class DuckTools
     }
 
     /// <summary>
-    /// Apply a user-defined function (UDF).
+    /// Register a user-defined function (UDF).
     /// </summary>
 
 #pragma warning disable DuckDBNET001
-    public static EnumsDuckMemory.Output ApplyScalarFunction<TInput, TOutput>(
+    public static EnumsDuckMemory.Output RegisterScalarFunction<TInput, TOutput>(
         DuckDBConnection db,
         string idFunction,
         Action<IReadOnlyList<IDuckDBDataReader>, IDuckDBDataWriter, ulong> func)

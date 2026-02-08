@@ -3,7 +3,7 @@ using LiteDB;
 
 namespace LiteDb_Memory_Lib;
 
-public static class GeneralTools
+public static class LiteDbTools
 {
     /// <summary>
     /// Creates an index on the specified collection by using a LiteDB expression.
@@ -140,6 +140,5 @@ public static class GeneralTools
         }
         return output;
     }
-
-
+    
 }
