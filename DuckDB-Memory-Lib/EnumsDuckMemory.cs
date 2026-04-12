@@ -12,6 +12,7 @@ public class EnumsDuckMemory
         COLLECTION_NOT_FOUND=6,
         PATH_AND_ID_IS_NULL_OR_EMPTY=7,
         ERROR_TO_DEBUG = 8,
-        ERROR_TO_ATTACHED_DATABASE = 9
+        ERROR_TO_ATTACHED_DATABASE = 9,
+        ERROR_TO_EXECUTE_QUERY = 10
     }
 }

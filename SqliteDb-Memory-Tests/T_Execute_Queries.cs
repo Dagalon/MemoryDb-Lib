@@ -5,10 +5,7 @@ namespace SqliteDb_Memory_Tests;
 public class ExecuteQueries
 {
     [SetUp]
-    public void Setup()
-    {
-        
-    }
+    public void Setup() { }
 
     [Test]
     public void T_Create_Table()
