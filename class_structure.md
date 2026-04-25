@@ -118,7 +118,7 @@ classDiagram
 - `DuckTools` (static class)
 - `QueryExecutor` (class)
 - `NetTypeToDuckDbType` (static class)
-- `EnumsDuckMemory` (class)
+- `EnumsDuckMemory` (static class)
   - `Output` (enum)
 
 ### Proyectos de pruebas

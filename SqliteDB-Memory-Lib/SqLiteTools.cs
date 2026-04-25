@@ -158,7 +158,7 @@ public static partial class SqLiteLiteTools
         }
         catch(Exception)
         {
-            return EnumsSqliteMemory.Output.ERROR_TO_DEBUG;
+            return EnumsSqliteMemory.Output.ERROR_TO_DETACH_DATABASE;
         }
     }
 

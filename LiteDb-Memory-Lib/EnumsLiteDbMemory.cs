@@ -2,6 +2,9 @@ namespace LiteDb_Memory_Lib;
 
 public static class EnumsLiteDbMemory
 {
+    /// <summary>
+    /// Unified operation outputs used by MemoryDb-Lib packages.
+    /// </summary>
     public enum Output
     {
         SUCCESS = 1,
@@ -9,6 +12,10 @@ public static class EnumsLiteDbMemory
         PATH_NOT_FOUND = 3,
         THERE_EXISTS_DATABASE = 4,
         PATH_IS_NULL_OR_EMPTY = 5,
-        COLLECTION_NOT_FOUND = 6
+        COLLECTION_NOT_FOUND = 6,
+        PATH_AND_ID_IS_NULL_OR_EMPTY = 7,
+        ERROR_TO_DETACH_DATABASE = 8,
+        ERROR_TO_ATTACHED_DATABASE = 9,
+        ERROR_TO_EXECUTE_QUERY = 10
     }
 }

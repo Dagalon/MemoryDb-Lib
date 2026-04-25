@@ -58,8 +58,9 @@ public class Connection
         manager.CreateCollection(aliasDb, "personal_data",[customer]);
        
         // Write to disk
-        var folderPath = "C:\\GitRepositories\\Net\\C#\\LiteDb-Memory-Lib-develop\\LiteDb-Memory-Tests\\Data";
-        var pathToKeep = Path.Combine(folderPath, "Test_Db_Shared.bin");
+        var dataPath = Path.Combine(AppContext.BaseDirectory, "Data");
+        Directory.CreateDirectory(dataPath);
+        var pathToKeep = Path.Combine(dataPath, "Test_Db_Shared.bin");
         manager.Close(aliasDb, pathToKeep);
         
         // Load again the database

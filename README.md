@@ -22,8 +22,10 @@ All libraries follow the same philosophy: offer an ergonomic API to create named
   - [Load seed data from JSON](#load-seed-data-from-json)
   - [Work with LiteDB file storage](#work-with-litedb-file-storage)
   - [Run ad-hoc queries](#run-ad-hoc-queries)
+  - [Filter documents with predicates](#filter-documents-with-predicates)
   - [Persist a database to disk](#persist-a-database-to-disk)
 - [SqliteDB-Memory-Lib quickstart](#sqlitedb-memory-lib-quickstart)
+- [DuckDB-Memory-Lib quickstart](#duckdb-memory-lib-quickstart)
 - [Testing](#testing)
 - [License](#license)
 
@@ -57,6 +59,7 @@ This repository now includes:
 
 - XML documentation comments on test methods and helper methods in all test projects.
 - A dedicated [class_structure.md](./class_structure.md) file with a color-coded class diagram and project inventory.
+- Homogenized `Output` enums across LiteDB, SQLite, and DuckDB libraries (shared status codes and naming).
 
 ## Requirements
 
@@ -147,6 +150,15 @@ var queryResults = GeneralTools.Execute<Person>(
 );
 ```
 
+### Filter documents with predicates
+
+```csharp
+using System.Linq.Expressions;
+
+Expression<Func<Person, bool>> filter = x => x.Name == "Ada";
+var person = FilterTools.FindOne(manager, "people-db", "people", filter);
+```
+
 ### Persist a database to disk
 
 ```csharp
@@ -192,6 +204,31 @@ The library exposes helpers to:
 - Map result sets into dictionaries or strongly-typed models via `QueryExecutor`.
 
 Refer to the [SqliteDB-Memory-Lib](./SqliteDB-Memory-Lib) project for additional samples and extension points.
+
+## DuckDB-Memory-Lib quickstart
+
+The DuckDB helper library supports in-memory analytics workflows and parquet ingestion:
+
+```csharp
+using DuckDb_Memory_Lib;
+
+var manager = ConnectionManager.GetInstance();
+var connection = manager.GetConnection();
+
+DuckTools.CreateDatabase(connection, idDataBase: "analytics", path: null);
+
+QueryExecutor.CreateParquetTable(
+    connection,
+    idDataBase: "analytics",
+    idTable: "customers",
+    parquetPathFile: "./data/sample_customers_orders.parquet");
+
+var result = QueryExecutor.ExecuteQryReader(
+    connection,
+    "SELECT CustomerID, SUM(UnitPrice) AS Total FROM analytics.customers GROUP BY CustomerID");
+```
+
+You can also attach databases from disk and enumerate tables/databases through `DuckTools.AttachedDataBase`, `DuckTools.GetListDataBase`, and `DuckTools.GetListTables`.
 
 ## Testing
 

@@ -43,7 +43,7 @@ public class ExecuteQueriesFromFile
         
         // root path of the file and excute the query
         var rootPath =  Path.Combine(AppContext.BaseDirectory, "Data");
-        var pathQry = Path.Combine(rootPath, "Qry_Parameterized.txt");
+        var pathQry = Path.Combine(rootPath, "qry_parameterized.txt");
         var parameters = new Dictionary<string, string> { { "@id", "1" }, { "@name", @"'Juan'" } };
         var result = SqLiteLiteTools.ExecuteQryReader(conn, pathQry, parameters);
         
