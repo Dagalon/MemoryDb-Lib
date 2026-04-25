@@ -73,4 +73,51 @@ public class QueryExecutor
             return EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY;
         }
     }
+    
+    /// <summary>
+    /// Executes a SQL statement and returns the resulting rows.
+    /// </summary>
+    public static (EnumsDuckMemory.Output, List<Dictionary<string, object>>) ExecuteQryReader(DuckDBConnection db, string qry)
+    {
+        try
+        {
+            var cmd = new DuckDBCommand(qry, db);
+            var qryResult = cmd.ExecuteReader();
+
+            var resultList = new List<Dictionary<string, object>>();
+
+            if (qryResult.HasRows)
+            {
+                while (qryResult.Read())
+                {
+                    resultList.Add(Enumerable.Range(0, qryResult.FieldCount)
+                        .ToDictionary(qryResult.GetName, qryResult.GetValue));
+                }
+            }
+
+            qryResult.Close();
+            return (EnumsDuckMemory.Output.SUCCESS, resultList);
+        }
+        catch (Exception)
+        {
+            return (EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY, []);
+        }
+    }
+
+    /// <summary>
+    /// Executes a parameterized SQL statement and returns the resulting rows.
+    /// </summary>
+    public static (EnumsDuckMemory.Output, List<Dictionary<string, object>>) ExecuteQryReader(DuckDBConnection db, string qry, Dictionary<string, string> parameters)
+    {
+        try
+        {
+            qry = parameters.Keys.Aggregate(qry,
+                (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
+            return ExecuteQryReader(db, qry);
+        }
+        catch (Exception ex)
+        {
+           throw new Exception( $"{ex.Message}-{EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY}");
+        }
+    }
 }

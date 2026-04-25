@@ -165,5 +165,39 @@ public static class DuckTools
             return EnumsDuckMemory.Output.DB_NOT_FOUND;
         }
     }
+    
+    /// <summary>
+    /// Retrieves the list of tables contained in the specified database alias.
+    /// </summary>
+    public static (EnumsDuckMemory.Output, List<string>?) GetListTables(DuckDBConnection db, string idDataBase)
+    {
+        var dataBases = GetListDataBase(db);
+
+        if (dataBases == null || !dataBases.Contains(idDataBase))
+        {
+            return (EnumsDuckMemory.Output.DB_NOT_FOUND, null);
+        }
+
+        try
+        {
+            List<string>? tables = [];
+            var qry = @"SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' AND table_type = 'BASE TABLE';";
+            var cmd = new DuckDBCommand(qry, db);
+            var qryReader = cmd.ExecuteReader();
+
+            while (qryReader.Read())
+            {
+                tables.Add(qryReader[0].ToString()!);
+            }
+
+            qryReader.Close();
+            return (EnumsDuckMemory.Output.SUCCESS, tables);
+        }
+        catch
+        {
+            return (EnumsDuckMemory.Output.DB_NOT_FOUND, null);
+        }
+    }
+
   
 }

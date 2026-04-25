@@ -25,4 +25,14 @@
       <ProjectReference Include="..\DuckDB-Memory-Lib\DuckDB-Memory-Lib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Data\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\sample_customers_orders.parquet">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
