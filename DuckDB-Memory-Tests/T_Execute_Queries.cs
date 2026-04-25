@@ -5,9 +5,15 @@ namespace DuckDB_Memory_Tests;
 
 public class ExecuteQueries
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup() { }
 
+    /// <summary>
+    /// Verifies table creation from a parquet file and subsequent read operations.
+    /// </summary>
     [Test]
     public void T_Create_Table_From_Parquet()
     {

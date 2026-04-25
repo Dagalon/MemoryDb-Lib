@@ -1,16 +1,18 @@
 # MemoryDb-Lib
 
-A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, and prototypes. The repository currently contains two .NET 9 class libraries:
+A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, and prototypes. The repository currently contains three .NET 9 class libraries:
 
 - **LiteDb-Memory-Lib** – a façade over [LiteDB](https://www.litedb.org/) that keeps track of in-memory databases and exposes utility helpers for seeding data, executing ad-hoc queries, and working with LiteDB file storage.
 - **SqliteDB-Memory-Lib** – a lightweight wrapper around the in-memory mode of Microsoft.Data.Sqlite with helpers to seed tables, execute SQL scripts, and map query results into strongly-typed objects.
+- **DuckDB-Memory-Lib** – a utility layer over [DuckDB.NET](https://duckdb.net/) that helps create named in-memory DuckDB databases, attach file-backed databases, and execute analytical SQL queries.
 
-Both libraries follow the same philosophy: offer an ergonomic API to create named in-memory databases, provide convenient seeding helpers, and make it trivial to clean up or persist data after a test run.
+All libraries follow the same philosophy: offer an ergonomic API to create named in-memory databases, provide convenient seeding helpers, and make it trivial to clean up or persist data after a test run.
 
 ## Table of contents
 
 - [Why use these libraries?](#why-use-these-libraries)
 - [Project structure](#project-structure)
+- [Documentation updates](#documentation-updates)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
   - [Build the solution](#build-the-solution)
@@ -39,12 +41,22 @@ Creating an in-memory database for a single test is straightforward, but making 
 
 ```
 LiteDb-Memory-Lib/
+├── DuckDB-Memory-Lib/           # DuckDB helpers and connection manager
+├── DuckDB-Memory-Tests/         # Tests targeting DuckDB-Memory-Lib
 ├── LiteDb-Memory-Lib/           # LiteDB helpers and connection manager
 ├── LiteDb-Memory-Tests/         # Tests targeting LiteDb-Memory-Lib
 ├── SqliteDB-Memory-Lib/         # SQLite in-memory utilities
 ├── SqliteDb-Memory-Tests/       # Tests targeting SqliteDB-Memory-Lib
+├── class_structure.md           # Project-wide class structure and relationships
 └── README.md
 ```
+
+## Documentation updates
+
+This repository now includes:
+
+- XML documentation comments on test methods and helper methods in all test projects.
+- A dedicated [class_structure.md](./class_structure.md) file with a color-coded class diagram and project inventory.
 
 ## Requirements
 

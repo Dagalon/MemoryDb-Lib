@@ -16,6 +16,9 @@ public struct Phone
         Number = n;
     }
     
+    /// <summary>
+    /// Returns the normalized phone number by combining prefix and local number.
+    /// </summary>
     public long GetPhoneNumber()
     {
         return long.Parse($"00{Prefix}{Number}");
@@ -44,11 +47,17 @@ public struct Order
 
 public class CrossReference
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies cross-collection references and document expansion by identifier.
+    /// </summary>
     [Test]
     public void T_CrossQuery()
     {

@@ -4,11 +4,17 @@ namespace SqliteDb_Memory_Tests;
 
 public class Connection
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies in-memory and attached SQLite database creation.
+    /// </summary>
     [Test]
     public void T_Create_Data_Base()
     {
@@ -37,6 +43,9 @@ public class Connection
         manager.CloseAllConnections();
     }
 
+    /// <summary>
+    /// Verifies table creation and query execution in an SQLite in-memory database.
+    /// </summary>
     [Test]
     public void T_Create_Table()
     {
@@ -70,6 +79,9 @@ public class Connection
         manager.CloseAllConnections();
     }
 
+    /// <summary>
+    /// Verifies alias-based connection reuse and isolation between aliases.
+    /// </summary>
     [Test]
     public void T_Multiple_Connections_By_Alias()
     {

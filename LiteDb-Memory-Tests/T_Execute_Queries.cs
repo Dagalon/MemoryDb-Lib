@@ -14,11 +14,17 @@ public class ExecuteQueries
     }
 
 
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies that LiteDB SQL queries can be executed against a seeded collection.
+    /// </summary>
     [Test]
     public void T_Get_Collections()
     {

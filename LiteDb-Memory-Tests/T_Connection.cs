@@ -5,11 +5,17 @@ namespace LiteDb_Memory_Tests;
 
 public class Connection
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies that shared and regular in-memory databases can be created by alias.
+    /// </summary>
     [Test]
     public void T_Create_Data_Base()
     {
@@ -28,6 +34,9 @@ public class Connection
         manager.Close(alias);
     }
     
+    /// <summary>
+    /// Verifies that a database can be persisted to disk and reopened afterwards.
+    /// </summary>
     [Test]
     public void T_Create_And_Remove_Data_Base()
     {

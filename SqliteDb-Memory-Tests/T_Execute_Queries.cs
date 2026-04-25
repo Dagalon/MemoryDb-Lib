@@ -4,9 +4,15 @@ namespace SqliteDb_Memory_Tests;
 
 public class ExecuteQueries
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup() { }
 
+    /// <summary>
+    /// Verifies SQLite table creation and basic row retrieval.
+    /// </summary>
     [Test]
     public void T_Create_Table()
     {
@@ -38,6 +44,9 @@ public class ExecuteQueries
         Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
     }
     
+    /// <summary>
+    /// Verifies bulk insertion of multiple rows into a predefined SQLite table.
+    /// </summary>
     [Test]
     public void T_Insert_Data()
     {

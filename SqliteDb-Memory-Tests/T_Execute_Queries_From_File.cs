@@ -4,12 +4,18 @@ namespace SqliteDb_Memory_Tests;
 
 public class ExecuteQueriesFromFile
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
         
     }
 
+    /// <summary>
+    /// Verifies execution of a parameterized SQL query loaded from file.
+    /// </summary>
     [Test]
     public void T_Execute_Query()
     {
@@ -44,6 +50,9 @@ public class ExecuteQueriesFromFile
         Assert.That(result is { Item1: EnumsSqliteMemory.Output.SUCCESS, Item2.Count: 1 });
     }
 
+    /// <summary>
+    /// Verifies CSV-driven table creation and mass import into SQLite.
+    /// </summary>
     [Test]
     public void T_Execute_Query_Massive_Insert()
     {

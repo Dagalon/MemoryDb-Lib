@@ -7,11 +7,17 @@ namespace LiteDb_Memory_Tests;
 public class InsertDocument
 {
     
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies insertion of a single <see cref="BsonDocument"/> into a collection.
+    /// </summary>
     [Test]
     public void T_Insert_One_BsonDocument()
     {

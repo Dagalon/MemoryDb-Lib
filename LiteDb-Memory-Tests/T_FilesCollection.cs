@@ -7,11 +7,17 @@ namespace LiteDb_Memory_Tests
     public class FilesCollection
     {
 
+        /// <summary>
+        /// Initializes test-level resources before each test execution.
+        /// </summary>
         [SetUp]
         public void Setup()
         {
         }
 
+        /// <summary>
+        /// Verifies file upload, persistence, and retrieval from LiteDB file storage.
+        /// </summary>
         [Test]
         public void T_Upload_File()
         {

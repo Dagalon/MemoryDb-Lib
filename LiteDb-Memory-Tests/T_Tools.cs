@@ -18,11 +18,17 @@ public struct PersonalData
 
 public class GeneralTools
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies that an index can be created and discovered through LiteDB system metadata.
+    /// </summary>
     [Test]
     public void T_Create_Index()
     {

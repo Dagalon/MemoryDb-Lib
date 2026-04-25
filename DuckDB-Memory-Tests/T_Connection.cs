@@ -4,11 +4,17 @@ namespace DuckDB_Memory_Tests;
 
 public class Connection
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies in-memory and attached DuckDB database creation.
+    /// </summary>
     [Test]
     public void T_Create_Data_Base()
     {

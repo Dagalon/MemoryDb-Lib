@@ -33,11 +33,17 @@ public struct TraderEntity(ObjectId traderId,  string entity, string tiering)
 
 public class FindDocuments
 {
+    /// <summary>
+    /// Initializes test-level resources before each test execution.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
     }
 
+    /// <summary>
+    /// Verifies reference resolution when querying an entity with dependent documents.
+    /// </summary>
     [Test]
     public void T_Find_One_With_Dependencies()
     {
@@ -121,6 +127,9 @@ public class FindDocuments
         Assert.That(output.Trader.Entity, Is.EqualTo("CITI"));
     }
 
+    /// <summary>
+    /// Verifies different single-document lookup strategies (predicate, query, and expression).
+    /// </summary>
     [Test]
     public void T_Find_One()
     {
