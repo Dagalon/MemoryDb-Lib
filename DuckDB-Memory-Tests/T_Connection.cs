@@ -25,8 +25,11 @@ public class Connection
         var conn = manager.GetConnection();
 
         var db = DuckTools.CreateDatabase(conn, idDataBase, null);
+        Assert.That(db, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        
         var attachedDb = DuckTools.AttachedDataBase(conn, null, idAttachedDatabase);
-
+        Assert.That(attachedDb, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        
         var listDataBases = DuckTools.GetListDataBase(conn);
 
         Assert.Multiple(() =>

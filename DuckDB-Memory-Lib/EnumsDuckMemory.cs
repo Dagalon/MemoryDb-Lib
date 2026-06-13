@@ -16,8 +16,6 @@ public static class EnumsDuckMemory
         PATH_AND_ID_IS_NULL_OR_EMPTY = 7,
         ERROR_TO_DETACH_DATABASE = 8,
         ERROR_TO_ATTACHED_DATABASE = 9,
-        ERROR_TO_EXECUTE_QUERY = 10,
-        [Obsolete("Use ERROR_TO_DETACH_DATABASE")]
-        ERROR_TO_DEBUG = ERROR_TO_DETACH_DATABASE
+        ERROR_TO_EXECUTE_QUERY = 10
     }
 }
