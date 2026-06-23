@@ -40,7 +40,7 @@ public static class MemoryDbSqliteExcelFunctions
         try
         {
             var names = SqliteDB_Memory_Lib.SqLiteLiteTools.GetListDataBase(Manager.GetConnection(alias)) ?? [];
-            return Tables.Vector("Database", names.Cast<object>());
+            return Tables.Vector("Database", names);
         }
         catch (Exception ex)
         {
@@ -55,7 +55,7 @@ public static class MemoryDbSqliteExcelFunctions
         {
             var (status, tables) = SqliteDB_Memory_Lib.SqLiteLiteTools.GetListTables(Manager.GetConnection(alias), string.IsNullOrWhiteSpace(databaseId) ? "main" : databaseId);
             return status == SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.SUCCESS
-                ? Tables.Vector("Table", (tables ?? []).Cast<object>())
+                ? Tables.Vector("Table", (tables ?? []))
                 : Tables.ErrorTable(status.ToString());
         }
         catch (Exception ex)

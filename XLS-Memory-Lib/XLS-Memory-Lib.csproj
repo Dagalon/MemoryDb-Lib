@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="ExcelDna.AddIn" Version="1.9.0" />
+    <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
   </ItemGroup>
 
   <ItemGroup>
