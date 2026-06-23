@@ -1,31 +1,25 @@
 # MemoryDb-Lib
 
-A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, and prototypes. The repository currently contains three .NET 9 class libraries:
+A collection of helper libraries that make it simple to spin up disposable, in-memory database engines for local development, automated tests, prototypes, and Excel workbooks. The repository targets **.NET 10.0** and contains:
 
 - **LiteDb-Memory-Lib** – a façade over [LiteDB](https://www.litedb.org/) that keeps track of in-memory databases and exposes utility helpers for seeding data, executing ad-hoc queries, and working with LiteDB file storage.
 - **SqliteDB-Memory-Lib** – a lightweight wrapper around the in-memory mode of Microsoft.Data.Sqlite with helpers to seed tables, execute SQL scripts, and map query results into strongly-typed objects.
-- **DuckDB-Memory-Lib** – a utility layer over [DuckDB.NET](https://duckdb.net/) that helps create named in-memory DuckDB databases, attach file-backed databases, and execute analytical SQL queries.
-
-All libraries follow the same philosophy: offer an ergonomic API to create named in-memory databases, provide convenient seeding helpers, and make it trivial to clean up or persist data after a test run.
+- **DuckDB-Memory-Lib** – helpers for in-memory DuckDB connections and SQL execution.
+- **Memory-DB** – the NuGet packaging project that references the database helper libraries.
+- **XLS-Memory-Lib** – an Excel-DNA add-in project that exposes Memory DB helpers as Excel worksheet functions and produces the `XLS-Memory-Lib.xll` add-in.
 
 ## Table of contents
 
 - [Why use these libraries?](#why-use-these-libraries)
 - [Project structure](#project-structure)
-- [Documentation updates](#documentation-updates)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
   - [Build the solution](#build-the-solution)
   - [Reference the projects](#reference-the-projects)
+  - [Deploy NuGet package and Excel add-in](#deploy-nuget-package-and-excel-add-in)
+- [Excel add-in](#excel-add-in)
 - [LiteDb-Memory-Lib quickstart](#litedb-memory-lib-quickstart)
-  - [Create and seed an in-memory database](#create-and-seed-an-in-memory-database)
-  - [Load seed data from JSON](#load-seed-data-from-json)
-  - [Work with LiteDB file storage](#work-with-litedb-file-storage)
-  - [Run ad-hoc queries](#run-ad-hoc-queries)
-  - [Filter documents with predicates](#filter-documents-with-predicates)
-  - [Persist a database to disk](#persist-a-database-to-disk)
 - [SqliteDB-Memory-Lib quickstart](#sqlitedb-memory-lib-quickstart)
-- [DuckDB-Memory-Lib quickstart](#duckdb-memory-lib-quickstart)
 - [Testing](#testing)
 - [License](#license)
 
@@ -34,39 +28,38 @@ All libraries follow the same philosophy: offer an ergonomic API to create named
 Creating an in-memory database for a single test is straightforward, but making it repeatable, discoverable, and safe across an entire test suite is not. These libraries encapsulate the boilerplate so you can:
 
 - Keep an inventory of named databases and share them across fixtures.
-- Seed data from CLR objects or JSON payloads without manual mapping.
+- Seed data from CLR objects, CSV files, SQL scripts, or JSON payloads without manual mapping.
 - Execute scripts or queries and deserialize the results into typed models.
 - Persist databases to disk when you need to inspect state after a test.
-- Integrate quickly with existing LiteDB or SQLite-based projects.
+- Integrate quickly with existing LiteDB, SQLite, DuckDB, or Excel-based workflows.
 
 ## Project structure
 
+```text
+LiteDb-Memory-Lib/          # LiteDB helpers and connection manager
+LiteDb-Memory-Tests/        # Tests targeting LiteDb-Memory-Lib
+SqliteDB-Memory-Lib/        # SQLite in-memory utilities
+SqliteDb-Memory-Tests/      # Tests targeting SqliteDB-Memory-Lib
+DuckDB-Memory-Lib/          # DuckDB in-memory utilities
+DuckDB-Memory-Tests/        # Tests targeting DuckDB-Memory-Lib
+Memory-Db/                  # Memory.DB NuGet packaging project
+XLS-Memory-Lib/             # Excel-DNA add-in project (XLS-Memory-Lib.xll)
+  LiteDbExcelFunctions.cs  # LiteDB worksheet functions
+  SqliteExcelFunctions.cs  # SQLite worksheet functions
+  DuckDbExcelFunctions.cs  # DuckDB worksheet functions
+scripts/deploy.sh           # Linux/macOS deployment helper
+scripts/deploy.ps1          # PowerShell deployment helper
+Artifacts/                  # Generated packages and add-ins
 ```
-LiteDb-Memory-Lib/
-├── DuckDB-Memory-Lib/           # DuckDB helpers and connection manager
-├── DuckDB-Memory-Tests/         # Tests targeting DuckDB-Memory-Lib
-├── LiteDb-Memory-Lib/           # LiteDB helpers and connection manager
-├── LiteDb-Memory-Tests/         # Tests targeting LiteDb-Memory-Lib
-├── SqliteDB-Memory-Lib/         # SQLite in-memory utilities
-├── SqliteDb-Memory-Tests/       # Tests targeting SqliteDB-Memory-Lib
-├── class_structure.md           # Project-wide class structure and relationships
-└── README.md
-```
-
-## Documentation updates
-
-This repository now includes:
-
-- XML documentation comments on test methods and helper methods in all test projects.
-- A dedicated [class_structure.md](./class_structure.md) file with a color-coded class diagram and project inventory.
-- Homogenized `Output` enums across LiteDB, SQLite, and DuckDB libraries (shared status codes and naming).
 
 ## Requirements
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download)
+- Microsoft Excel for loading the generated Excel-DNA `.xll` add-in.
 - [LiteDB](https://www.nuget.org/packages/LiteDB) (transitive dependency of LiteDb-Memory-Lib)
-- [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) (used for JSON seeding helpers)
 - [Microsoft.Data.Sqlite](https://www.nuget.org/packages/Microsoft.Data.Sqlite) (used by SqliteDB-Memory-Lib)
+- [DuckDB.NET.Data.Full](https://www.nuget.org/packages/DuckDB.NET.Data.Full) (used by DuckDB-Memory-Lib)
+- [ExcelDna.AddIn](https://www.nuget.org/packages/ExcelDna.AddIn) (used by XLS-Memory-Lib)
 
 ## Getting started
 
@@ -75,7 +68,7 @@ This repository now includes:
 Clone the repository and run a build from the root directory:
 
 ```bash
-dotnet build
+dotnet build MSBuild/MemoryDb-Lib.sln
 ```
 
 ### Reference the projects
@@ -83,12 +76,99 @@ dotnet build
 Until packages are published to NuGet you can reference the projects directly from a consumer solution:
 
 ```bash
-# LiteDB helper library
-dotnet add <your-project> reference ../LiteDb-Memory-Lib/LiteDb-Memory-Lib/LiteDb-Memory-Lib.csproj
+# Memory.DB aggregate package project
+dotnet add <your-project> reference ./Memory-Db/Memory-Db.csproj
 
-# SQLite helper library
-dotnet add <your-project> reference ../LiteDb-Memory-Lib/SqliteDB-Memory-Lib/SqliteDB-Memory-Lib.csproj
+# Individual helper libraries
+dotnet add <your-project> reference ./LiteDb-Memory-Lib/LiteDb-Memory-Lib.csproj
+dotnet add <your-project> reference ./SqliteDB-Memory-Lib/SqliteDB-Memory-Lib.csproj
+dotnet add <your-project> reference ./DuckDB-Memory-Lib/DuckDB-Memory-Lib.csproj
 ```
+
+### Deploy NuGet package and Excel add-in
+
+Use the deployment helper to generate both deliverables in one step:
+
+```bash
+./scripts/deploy.sh Release
+```
+
+On Windows or PowerShell:
+
+```powershell
+./scripts/deploy.ps1 -Configuration Release
+```
+
+The deploy command performs the following actions automatically:
+
+1. Restores the solution.
+2. Packs `Memory-Db/Memory-Db.csproj` into `Artifacts/Memory.DB.<version>.nupkg`.
+3. Builds the Excel-DNA project `XLS-Memory-Lib/XLS-Memory-Lib.csproj`.
+4. Copies the generated Excel add-in files (`.xll` and `.dna`) into `Artifacts/addin/`.
+
+## Excel add-in
+
+`XLS-Memory-Lib` is an Excel-DNA add-in compatible with the repository's .NET 10.0 projects. It produces a 64-bit add-in named `XLS-Memory-Lib.xll` and separates worksheet functions by database type using Excel categories: **Memory DB - LiteDB**, **Memory DB - SQLite**, and **Memory DB - DuckDB**.
+
+### Common functions
+
+| Function | Description |
+| --- | --- |
+| `MEMDB.VERSION()` | Returns the loaded add-in assembly version. |
+
+### LiteDB functions (`Memory DB - LiteDB`)
+
+| Function | Description |
+| --- | --- |
+| `MEMDB.LITEDB.CREATE(alias, [path], [replaceExisting], [shared])` | Creates/replaces an in-memory LiteDB database or opens a file-backed database. |
+| `MEMDB.LITEDB.CLOSE(alias, [pathToKeep])` | Closes a LiteDB database and optionally saves it to disk. |
+| `MEMDB.LITEDB.COLLECTIONS(alias)` | Spills the collection names for a LiteDB database. |
+| `MEMDB.LITEDB.INSERT.JSON(alias, collection, jsonDocument)` | Inserts one JSON document into a LiteDB collection. |
+| `MEMDB.LITEDB.FINDALL.JSON(alias, collection)` | Spills all documents in a LiteDB collection as JSON text. |
+| `MEMDB.LITEDB.DELETE(alias, collection, id)` | Deletes one LiteDB document by id. |
+
+### SQLite functions (`Memory DB - SQLite`)
+
+| Function | Description |
+| --- | --- |
+| `MEMDB.SQLITE.OPEN(alias, [path])` | Opens or creates a named SQLite connection, optionally from a database file. |
+| `MEMDB.SQLITE.ATTACH(alias, databaseId, [path], [removeIfExist])` | Attaches an in-memory or file-backed SQLite database to a connection. |
+| `MEMDB.SQLITE.DATABASES(alias)` | Spills the attached SQLite database names. |
+| `MEMDB.SQLITE.TABLES(alias, [databaseId])` | Spills the tables for an attached SQLite database. |
+| `MEMDB.SQLITE.CREATE.TABLE(alias, table, range, [databaseId])` | Creates a SQLite table from an Excel range whose first row contains headers. |
+| `MEMDB.SQLITE.INSERT(alias, table, range, [databaseId])` | Inserts Excel range rows into a SQLite table. |
+| `MEMDB.SQLITE.EXECUTE(alias, sql)` | Executes a non-query SQLite statement. |
+| `MEMDB.SQLITE.SCALAR(alias, sql)` | Executes a scalar SQLite query. |
+| `MEMDB.SQLITE.QUERY(alias, sql, [includeHeaders])` | Executes a SQLite query and spills a two-dimensional result. |
+| `MEMDB.SQLITE.DROP.TABLE(alias, table, [databaseId])` | Drops a SQLite table. |
+| `MEMDB.SQLITE.SAVE(alias, databaseId, path)` | Saves an attached SQLite database to a file. |
+| `MEMDB.SQLITE.CLOSE(alias)` | Closes a named SQLite connection. |
+| `MEMDB.SQLITE.CLOSE.ALL()` | Closes all SQLite connections. |
+
+### DuckDB functions (`Memory DB - DuckDB`)
+
+| Function | Description |
+| --- | --- |
+| `MEMDB.DUCKDB.OPEN(alias, [path])` | Opens or creates a named DuckDB connection, optionally from a database file. |
+| `MEMDB.DUCKDB.ATTACH(alias, databaseId, [path], [removeIfExist])` | Attaches an in-memory or file-backed DuckDB database to a connection. |
+| `MEMDB.DUCKDB.DATABASES(alias)` | Spills the attached DuckDB database names. |
+| `MEMDB.DUCKDB.CREATE.TABLE(alias, table, range, [databaseId])` | Creates or replaces a DuckDB table from an Excel range whose first row contains headers. |
+| `MEMDB.DUCKDB.INSERT(alias, table, range, [databaseId])` | Inserts Excel range rows into a DuckDB table. |
+| `MEMDB.DUCKDB.EXECUTE(alias, sql)` | Executes a non-query DuckDB statement. |
+| `MEMDB.DUCKDB.SCALAR(alias, sql)` | Executes a scalar DuckDB query. |
+| `MEMDB.DUCKDB.QUERY(alias, sql, [includeHeaders])` | Executes a DuckDB query and spills a two-dimensional result. |
+| `MEMDB.DUCKDB.CLOSE(alias)` | Closes a named DuckDB connection. |
+| `MEMDB.DUCKDB.CLOSE.ALL()` | Closes all DuckDB connections. |
+
+Example workbook formulas:
+
+```excel
+=MEMDB.SQLITE.OPEN("demo")
+=MEMDB.SQLITE.CREATE.TABLE("demo", "People", A1:B3)
+=MEMDB.SQLITE.QUERY("demo", "SELECT * FROM People")
+```
+
+Load `Artifacts/addin/XLS-Memory-Lib.xll` from Excel via **File > Options > Add-ins > Manage Excel Add-ins > Browse**.
 
 ## LiteDb-Memory-Lib quickstart
 
@@ -150,15 +230,6 @@ var queryResults = GeneralTools.Execute<Person>(
 );
 ```
 
-### Filter documents with predicates
-
-```csharp
-using System.Linq.Expressions;
-
-Expression<Func<Person, bool>> filter = x => x.Name == "Ada";
-var person = FilterTools.FindOne(manager, "people-db", "people", filter);
-```
-
 ### Persist a database to disk
 
 ```csharp
@@ -205,37 +276,18 @@ The library exposes helpers to:
 
 Refer to the [SqliteDB-Memory-Lib](./SqliteDB-Memory-Lib) project for additional samples and extension points.
 
-## DuckDB-Memory-Lib quickstart
-
-The DuckDB helper library supports in-memory analytics workflows and parquet ingestion:
-
-```csharp
-using DuckDb_Memory_Lib;
-
-var manager = ConnectionManager.GetInstance();
-var connection = manager.GetConnection();
-
-DuckTools.CreateDatabase(connection, idDataBase: "analytics", path: null);
-
-QueryExecutor.CreateParquetTable(
-    connection,
-    idDataBase: "analytics",
-    idTable: "customers",
-    parquetPathFile: "./data/sample_customers_orders.parquet");
-
-var result = QueryExecutor.ExecuteQryReader(
-    connection,
-    "SELECT CustomerID, SUM(UnitPrice) AS Total FROM analytics.customers GROUP BY CustomerID");
-```
-
-You can also attach databases from disk and enumerate tables/databases through `DuckTools.AttachedDataBase`, `DuckTools.GetListDataBase`, and `DuckTools.GetListTables`.
-
 ## Testing
 
-Both libraries ship with dedicated test projects. Run the entire suite from the repository root:
+Run the entire suite from the repository root:
 
 ```bash
-dotnet test
+dotnet test MSBuild/MemoryDb-Lib.sln
+```
+
+Build and package both deployment artifacts:
+
+```bash
+./scripts/deploy.sh Release
 ```
 
 ## License

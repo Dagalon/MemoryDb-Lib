@@ -24,3 +24,9 @@ MSBuild/LiteDB-Memory-Lib.sln.DotSettings.user
 /DuckDB-Memory-Tests/obj
 /DuckDB-Memory-Tests/bin
 /DuckDB-Memory-Tests/.idea
+/XLS-Memory-Lib/obj
+/XLS-Memory-Lib/bin
+/XLS-Memory-Lib/.idea
+/XLS-Memory-Tests/obj
+/XLS-Memory-Tests/bin
+/XLS-Memory-Tests/.idea
