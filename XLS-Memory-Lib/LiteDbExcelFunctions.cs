@@ -7,7 +7,7 @@ public static class MemoryDbLiteDbExcelFunctions
 {
     private const string Category = "Memory DB - LiteDB";
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.CREATE", Description = "Creates or replaces a named in-memory LiteDB database, or opens a file-backed database when path is provided.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CREATE", Description = "Creates or replaces a named in-memory LiteDB database, or opens a file-backed database when path is provided.", Category = Category)]
     public static string Create(string alias, string path = "", bool replaceExisting = true, bool shared = false)
     {
         if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
@@ -15,14 +15,14 @@ public static class MemoryDbLiteDbExcelFunctions
         return result.ToString();
     }
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.CLOSE", Description = "Closes a named LiteDB database and optionally persists it to disk.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CLOSE", Description = "Closes a named LiteDB database and optionally persists it to disk.", Category = Category)]
     public static string Close(string alias, string pathToKeep = "")
     {
         if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
         return Manager.Close(alias, NullIfBlank(pathToKeep)).ToString();
     }
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.COLLECTIONS", Description = "Lists the collections registered in a LiteDB database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.COLLECTIONS", Description = "Lists the collections registered in a LiteDB database.", Category = Category)]
     public static object[,] Collections(string alias)
     {
         if (string.IsNullOrWhiteSpace(alias)) return Tables.ErrorTable("alias is required");
@@ -30,7 +30,7 @@ public static class MemoryDbLiteDbExcelFunctions
         return Tables.Vector("Collection", names.Cast<object>());
     }
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.INSERT.JSON", Description = "Inserts one JSON document into a LiteDB collection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.INSERT.JSON", Description = "Inserts one JSON document into a LiteDB collection.", Category = Category)]
     public static string InsertJson(string alias, string collection, string jsonDocument)
     {
         if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
@@ -53,7 +53,7 @@ public static class MemoryDbLiteDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.FINDALL.JSON", Description = "Returns all LiteDB collection documents as JSON text.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.FINDALL.JSON", Description = "Returns all LiteDB collection documents as JSON text.", Category = Category)]
     public static object[,] FindAllJson(string alias, string collection)
     {
         if (string.IsNullOrWhiteSpace(alias)) return Tables.ErrorTable("alias is required");
@@ -76,7 +76,7 @@ public static class MemoryDbLiteDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.LITEDB.DELETE", Description = "Deletes one LiteDB document by id from a collection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.DELETE", Description = "Deletes one LiteDB document by id from a collection.", Category = Category)]
     public static string Delete(string alias, string collection, string id)
     {
         if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");

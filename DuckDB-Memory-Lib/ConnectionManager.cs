@@ -9,7 +9,7 @@ public sealed class ConnectionManager
     private static readonly Lazy<ConnectionManager> LazyInstance =
         new(() => new ConnectionManager(), LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private readonly Lock _syncRoot = new();
+    private readonly object _syncRoot = new();
     private readonly Dictionary<string, DuckDBConnection> _connections = new(StringComparer.OrdinalIgnoreCase);
 
     private ConnectionManager() { }

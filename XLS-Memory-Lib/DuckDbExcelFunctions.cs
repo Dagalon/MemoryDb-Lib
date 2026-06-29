@@ -6,7 +6,7 @@ public static class MemoryDbDuckDbExcelFunctions
 {
     private const string Category = "Memory DB - DuckDB";
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.OPEN", Description = "Opens or creates a named DuckDB in-memory connection, optionally from a database file path.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.OPEN", Description = "Opens or creates a named DuckDB in-memory connection, optionally from a database file path.", Category = Category)]
     public static string Open(string alias, string path = "")
     {
         try
@@ -20,7 +20,7 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.ATTACH", Description = "Attaches a DuckDB database file or in-memory database to an existing connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.ATTACH", Description = "Attaches a DuckDB database file or in-memory database to an existing connection.", Category = Category)]
     public static string Attach(string alias, string databaseId, string path = "", bool removeIfExist = false)
     {
         try
@@ -34,7 +34,7 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.DATABASES", Description = "Lists attached DuckDB databases for a named connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.DATABASES", Description = "Lists attached DuckDB databases for a named connection.", Category = Category)]
     public static object[,] Databases(string alias)
     {
         try
@@ -48,13 +48,13 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.CREATE.TABLE", Description = "Creates a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.TABLE", Description = "Creates a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
     public static string CreateTable(string alias, string table, object[,] range, string databaseId = "main")
     {
         return Relational.RelationalCreateTable(alias, table, range, databaseId, isDuckDb: true);
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
     public static string Insert(string alias, string table, object[,] range, string databaseId = "main")
     {
         if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return Error(error);
@@ -69,23 +69,23 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.EXECUTE", Description = "Executes a non-query SQL statement against a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.EXECUTE", Description = "Executes a non-query SQL statement against a named DuckDB connection.", Category = Category)]
     public static string Execute(string alias, string sql) => Relational.RelationalExecute(alias, sql, isDuckDb: true);
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.SCALAR", Description = "Executes a scalar SQL query against a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.SCALAR", Description = "Executes a scalar SQL query against a named DuckDB connection.", Category = Category)]
     public static object Scalar(string alias, string sql) => Relational.RelationalScalar(alias, sql, isDuckDb: true);
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.QUERY", Description = "Executes a DuckDB query and spills the result as a two-dimensional array.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.QUERY", Description = "Executes a DuckDB query and spills the result as a two-dimensional array.", Category = Category)]
     public static object[,] Query(string alias, string sql, bool includeHeaders = true) => Relational.RelationalQuery(alias, sql, includeHeaders, isDuckDb: true);
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.CLOSE", Description = "Closes a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE", Description = "Closes a named DuckDB connection.", Category = Category)]
     public static string Close(string alias)
     {
         Manager.CloseConnection(alias);
         return "SUCCESS";
     }
 
-    [ExcelFunction(Name = "MEMDB.DUCKDB.CLOSE.ALL", Description = "Closes all DuckDB connections.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE.ALL", Description = "Closes all DuckDB connections.", Category = Category)]
     public static string CloseAll()
     {
         Manager.CloseAllConnections();

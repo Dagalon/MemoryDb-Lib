@@ -1,33 +1,64 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <RootNamespace>XLS_Memory_Lib</RootNamespace>
-    <AssemblyName>XLS-Memory-Lib</AssemblyName>
-    <PackageId>XLS-Memory-Lib</PackageId>
-    <Version>1.0.0</Version>
-    <Description>Excel-DNA add-in exposing Memory.DB helpers as Excel worksheet functions.</Description>
-    <UseWindowsForms>false</UseWindowsForms>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <RunExcelDnaPack>true</RunExcelDnaPack>
-    <ExcelAddInFileName>XLS-Memory-Lib</ExcelAddInFileName>
-    <ExcelDnaCreate32BitAddIn>false</ExcelDnaCreate32BitAddIn>
-    <ExcelDnaCreate64BitAddIn>true</ExcelDnaCreate64BitAddIn>
-    <ExcelDna64BitAddInSuffix>%none%</ExcelDna64BitAddInSuffix>
-    <ExcelDnaPackXllSuffix>%none%</ExcelDnaPackXllSuffix>
-    <ExcelDnaPackCompressResources>true</ExcelDnaPackCompressResources>
-    <ExcelDnaPackRunMultithreaded>true</ExcelDnaPackRunMultithreaded>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
 
-  <ItemGroup>
-    <PackageReference Include="ExcelDna.AddIn" Version="1.9.0" />
-    <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
-  </ItemGroup>
+        <ExcelDnaRuntimeVersion>v8.0</ExcelDnaRuntimeVersion>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Memory-Db\Memory-Db.csproj" />
-  </ItemGroup>
+        <RootNamespace>XLS_Memory_Lib</RootNamespace>
+        <AssemblyName>XLS-Memory-Lib</AssemblyName>
 
+        <UseWindowsForms>false</UseWindowsForms>
+
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+        <RunExcelDnaPack>true</RunExcelDnaPack>
+
+        <ExcelAddInFileName>XLS-Memory-Lib</ExcelAddInFileName>
+        <ExcelDnaCreate32BitAddIn>false</ExcelDnaCreate32BitAddIn>
+        <ExcelDnaCreate64BitAddIn>true</ExcelDnaCreate64BitAddIn>
+
+        <ExcelDna64BitAddInSuffix>%none%</ExcelDna64BitAddInSuffix>
+        <ExcelDnaPackXllSuffix>%none%</ExcelDnaPackXllSuffix>
+
+        <ExcelDnaPackCompressResources>true</ExcelDnaPackCompressResources>
+        <ExcelDnaPackRunMultithreaded>true</ExcelDnaPackRunMultithreaded>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ExcelDna.AddIn" Version="1.10.0-preview4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="XLS-Memory-Lib.dna">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Memory-Db\Memory-Db.csproj"/>
+        <ProjectReference Include="..\SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj"/>
+        <ProjectReference Include="..\LiteDB-Memory-Lib\LiteDB-Memory-Lib.csproj"/>
+        <ProjectReference Include="..\DuckDB-Memory-Lib\DuckDB-Memory-Lib.csproj"/>
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibraries" AfterTargets="ExcelDnaPack">
+        <PropertyGroup>
+            <MyPublishDir>$(TargetDir)publish\</MyPublishDir>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <NativeDlls Include="$(TargetDir)runtimes\win-x64\native\duckdb.dll" />
+            <NativeDlls Include="$(TargetDir)runtimes\win-x64\native\e_sqlite3.dll" />
+        </ItemGroup>
+
+        <Copy
+                SourceFiles="@(NativeDlls)"
+                DestinationFolder="$(MyPublishDir)"
+                SkipUnchangedFiles="false" />
+    </Target>
+    
 </Project>
