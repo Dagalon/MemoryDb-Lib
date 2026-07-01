@@ -15,5 +15,12 @@ public static class GeneralFunctionalities
         var folder = Path.GetDirectoryName(xllPath)!;
         return folder;
     }
+    
+    [ExcelFunction(Name = "MEMORY_DB.NATIVE.PATH")]
+    public static string NativePath()
+    {
+        var arch = Environment.Is64BitProcess ? "x64" : "x86";
+        return Path.Combine(AppContext.BaseDirectory, "native", arch);
+    }
 
 }

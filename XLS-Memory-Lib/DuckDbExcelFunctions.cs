@@ -11,6 +11,7 @@ public static class MemoryDbDuckDbExcelFunctions
     {
         try
         {
+            
             Manager.GetConnection(alias, string.IsNullOrWhiteSpace(path) ? null : path);
             return "SUCCESS";
         }

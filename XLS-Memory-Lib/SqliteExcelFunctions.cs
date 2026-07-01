@@ -11,6 +11,7 @@ public static class MemoryDbSqliteExcelFunctions
     {
         try
         {
+            
             Manager.GetConnection(name, string.IsNullOrWhiteSpace(path) ? null : path);
             return "SUCCESS";
         }

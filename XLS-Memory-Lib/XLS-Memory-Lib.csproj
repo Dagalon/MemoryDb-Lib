@@ -45,20 +45,30 @@
         <ProjectReference Include="..\DuckDB-Memory-Lib\DuckDB-Memory-Lib.csproj"/>
     </ItemGroup>
 
+    <PropertyGroup>
+        <NativePlatform Condition="'$(PlatformTarget)' == ''">x64</NativePlatform>
+        <NativePlatform Condition="'$(PlatformTarget)' != ''">$(PlatformTarget)</NativePlatform>
+        <NativeRid Condition="'$(NativePlatform)' == 'x64'">win-x64</NativeRid>
+        <NativeRid Condition="'$(NativePlatform)' == 'x86'">win-x86</NativeRid>
+    </PropertyGroup>
+
     <Target Name="CopyNativeLibraries" AfterTargets="ExcelDnaPack">
         <PropertyGroup>
             <MyPublishDir>$(TargetDir)publish\</MyPublishDir>
+            <NativePublishDir>$(MyPublishDir)native\$(NativePlatform)\</NativePublishDir>
         </PropertyGroup>
 
+        <MakeDir Directories="$(NativePublishDir)" />
+
         <ItemGroup>
-            <NativeDlls Include="$(TargetDir)runtimes\win-x64\native\duckdb.dll" />
-            <NativeDlls Include="$(TargetDir)runtimes\win-x64\native\e_sqlite3.dll" />
+            <NativeDlls Include="$(TargetDir)runtimes\$(NativeRid)\Native\*.dll" />
         </ItemGroup>
 
         <Copy
                 SourceFiles="@(NativeDlls)"
-                DestinationFolder="$(MyPublishDir)"
-                SkipUnchangedFiles="false" />
+                DestinationFolder="$(NativePublishDir)"
+                SkipUnchangedFiles="false"
+                Condition="'@(NativeDlls)' != ''" />
     </Target>
     
 </Project>
