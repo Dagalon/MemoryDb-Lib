@@ -61,12 +61,7 @@ public class ExecuteQueries
         var checkDataBase = SqLiteLiteTools.CreateDatabase(conn, idDataBase, null);
         Assert.That(checkDataBase == EnumsSqliteMemory.Output.SUCCESS);
         
-        // data of the table
-        var headers = new List<string> { "ID", "NAME", "FIRST_NAME", "AGE", "JOB" };
-        var checkTable = SqLiteLiteTools.CreateTable(conn, idDataBase, idTable, headers, null);
-        Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
-        
-        var data = new object[,] {
+         var data = new object[,] {
             { 1, "Juan", "Garcia", 25, "Programmer" },
             { 2, "Pedro", "Moreno", 45, "Engineer" },
             { 3, "Maria", "Lopez", 32, "Electrician" },
@@ -118,6 +113,12 @@ public class ExecuteQueries
             { 49, "Alberto", "Estevez", 40, "Manager" },
             { 50, "Julia", "Prieto", 26, "Consultant" }
         };
+        
+        
+        // data of the table
+        var headers = new List<string> { "ID", "NAME", "FIRST_NAME", "AGE", "JOB" };
+        var checkTable = SqLiteLiteTools.CreateTable(conn, idDataBase, idTable, headers, null);
+        Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
         
         var checkInsert = SqLiteLiteTools.Insert(conn, idDataBase, idTable, headers, data);
         Assert.That(checkInsert == EnumsSqliteMemory.Output.SUCCESS);

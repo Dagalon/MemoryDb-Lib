@@ -89,35 +89,31 @@ namespace SqliteDB_Memory_Lib
             List<string> headers,
             List<Type>? types = null)
         {
-            static string QuoteIdentifier(string identifier)
+
+            if (types is null && values is not null)
             {
-                if (string.IsNullOrWhiteSpace(identifier))
-                    throw new ArgumentException("SQL identifier cannot be null or empty.");
-
-                return "\"" + identifier.Replace("\"", "\"\"") + "\"";
-            }
-
-            if (types is null)
-            {
-                if (values is null)
-                    throw new ArgumentException("Values cannot be null when types are not provided.", nameof(values));
-
                 types = NetTypeToSqLiteType.InferTypes(values, headers.Count);
             }
-
+            
             var fieldsDefinition = new List<string>();
             var noFields = headers.Count;
 
             for (var i = 0; i < noFields; i++)
             {
-                var columnName = QuoteIdentifier(headers[i]);
-                var sqliteType = NetTypeToSqLiteType.GetDbType(types[i]);
-
-                fieldsDefinition.Add($"{columnName} {sqliteType}");
+                var columnName = SqLiteLiteTools.QuoteIdentifier(headers[i]);
+                if (types is null)
+                {
+                    fieldsDefinition.Add(columnName);
+                }
+                else
+                {
+                    var sqliteType = NetTypeToSqLiteType.GetDbType(types[i]);
+                    fieldsDefinition.Add($"{columnName} {sqliteType}");
+                }
             }
 
             var tableName =
-                $"{QuoteIdentifier(idDataBase)}.{QuoteIdentifier(idTable)}";
+                $"{SqLiteLiteTools.QuoteIdentifier(idDataBase)}.{SqLiteLiteTools.QuoteIdentifier(idTable)}";
 
             var qry =
                 $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", fieldsDefinition)})";

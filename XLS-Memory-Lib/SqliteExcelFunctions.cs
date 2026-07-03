@@ -80,17 +80,15 @@ public static class MemoryDbSqliteExcelFunctions
             {
                 return "SUCCES";
             }
-            else
-            {
-                return "ERROR:-" + output;
-            }
+
+            return "ERROR:-" + output;
         }
         catch (Exception ex)
         {
             return "ERROR:-" + Error(ex.Message);
         }
     }
-
+    
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.INSERT", Description = "Inserts rows into a SQLite table from an Excel range. First row must contain headers.", Category = Category)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {
