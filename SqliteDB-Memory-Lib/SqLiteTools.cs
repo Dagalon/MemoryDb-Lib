@@ -70,7 +70,7 @@ public static partial class SqLiteLiteTools
         try
         {
             DropTable(db, idDataBase, idTable);
-            QueryExecutor.CreateTable(db, idDataBase, idTable, headers);
+            QueryExecutor.CreateTable(db, idDataBase, idTable, values, headers);
             if (values != null)
             {
                 QueryExecutor.Insert(db, idDataBase, idTable, headers, values, "");
@@ -82,6 +82,29 @@ public static partial class SqLiteLiteTools
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
+    
+    /// <summary>
+    /// Escapes and quotes a SQL identifier (such as a table, column, or database name)
+    /// so it can be safely used in SQLite statements, including identifiers containing
+    /// reserved keywords, spaces, or special characters.
+    /// </summary>
+    
+    public static string QuoteIdentifier(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            throw new ArgumentException("SQL identifier cannot be null or empty.", nameof(identifier));
+
+        return "\"" + identifier.Replace("\"", "\"\"") + "\"";
+    }
+    
+    /// <summary>
+    /// Generates a unique SQL parameter name for use in parameterized SQLite commands.
+    /// </summary>
+    public static string ParameterName(int index)
+    {
+        return "@p" + index;
+    }
+
 
     /// <summary>
     /// Creates a table and populates it with data imported from a CSV file.
@@ -367,6 +390,18 @@ public static partial class SqLiteLiteTools
         dataBases.Close();
         return idList;
     }
+    
+    /// <summary>
+    /// Resolves the specified SQL input by reading it from a text file when a valid file path is provided; otherwise, returns the input as a SQL statement.
+    /// </summary>
+    
+    public static string ResolveSql(string sqlOrPath)
+    {
+        if (string.IsNullOrWhiteSpace(sqlOrPath))
+            throw new ArgumentException("SQL query or file path cannot be empty.", nameof(sqlOrPath));
+
+        return File.Exists(sqlOrPath) ? File.ReadAllText(sqlOrPath) : sqlOrPath;
+    }
 
     /// <summary>
     /// Retrieves the list of tables contained in the specified database alias.
@@ -533,7 +568,7 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            using SqliteConnection destination = new SqliteConnection($"Data Source={idPathFile}; Version=3;");
+            using SqliteConnection destination = new SqliteConnection($"Data Source={idPathFile}");
             destination.Open();
             db.BackupDatabase(destination, "main", idDataBase);
             destination.Close();
@@ -610,7 +645,7 @@ public static partial class SqLiteLiteTools
 
         var listTables = tablesResult.Item2;
         if (listTables == null || !listTables.Contains(idTable))
-            return (EnumsSqliteMemory.Output.COLLECTION_NOT_FOUND, $"The data base {idDataBase} doesn't contain the table {idTable}");
+            return (EnumsSqliteMemory.Output.TABLE_NOT_FOUND, $"The data base {idDataBase} doesn't contain the table {idTable}");
 
         try
         {

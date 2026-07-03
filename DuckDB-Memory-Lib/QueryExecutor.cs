@@ -3,7 +3,7 @@ using System.IO;
 
 namespace DuckDb_Memory_Lib;
 
-public class QueryExecutor
+public static class QueryExecutor
 {
     
     /// <summary>

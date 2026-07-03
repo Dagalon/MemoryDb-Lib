@@ -6,7 +6,7 @@ namespace XLS_Memory_Lib;
 
 internal static class Relational
 {
-    internal static string RelationalCreateTable(string alias, string table, object[,] range, string databaseId, bool isDuckDb)
+    internal static string RelationalCreateTable(string table, object[,] range, string databaseId, bool isDuckDb)
 {
     if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return $"ERROR: {error}";
 
@@ -14,17 +14,17 @@ internal static class Relational
     {
         if (isDuckDb)
         {
-            ExecuteDuck(alias, BuildCreateTableSql(databaseId, table, headers, values));
-            RelationalInsertRows(alias, table, headers, values, databaseId, isDuckDb: true);
+            ExecuteDuck(databaseId, BuildCreateTableSql(databaseId, table, headers, values));
+            RelationalInsertRows(table, headers, values, databaseId, isDuckDb: true);
             return "SUCCESS";
         }
 
-        var connection = SqliteDB_Memory_Lib.ConnectionManager.GetInstance().GetConnection(alias);
-        return SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table, headers, values).ToString();
+        var connection = SqliteDB_Memory_Lib.ConnectionManager.GetInstance().GetConnection(databaseId);
+        return SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table,  headers, values).ToString();
     }
     catch (Exception ex)
     {
-        return $"ERROR: {ex.Message}";
+        return  string.Concat("ERROR-:", ex.Message);
     }
 }
 
@@ -39,7 +39,7 @@ internal static class Relational
     }
     catch (Exception ex)
     {
-        return $"ERROR: {ex.Message}";
+        return string.Concat("ERROR-:", ex.Message);
     }
 }
 
@@ -74,26 +74,26 @@ internal static class Relational
     }
 }
 
-    internal static void RelationalInsertRows(string alias, string table, List<string> headers, object[,] values, string databaseId, bool isDuckDb)
-{
-    if (!isDuckDb) throw new InvalidOperationException("Use the SQLite helper for SQLite inserts.");
-
-    var qualifiedTable = Qualify(databaseId, table);
-    var fieldList = string.Join(", ", headers.Select(QuoteIdentifier));
-    var rowCount = values.GetLength(0);
-    var columnCount = values.GetLength(1);
-
-    for (var row = 0; row < rowCount; row++)
+    internal static void RelationalInsertRows(string table, List<string> headers, object[,] values, string databaseId, bool isDuckDb)
     {
-        var literals = new List<string>();
-        for (var column = 0; column < columnCount; column++)
-        {
-            literals.Add(SqlLiteral(values[row, column]));
-        }
+        if (!isDuckDb) throw new InvalidOperationException("Use the SQLite helper for SQLite inserts.");
 
-        ExecuteDuck(alias, $"INSERT INTO {qualifiedTable} ({fieldList}) VALUES ({string.Join(", ", literals)})");
+        var qualifiedTable = Qualify(databaseId, table);
+        var fieldList = string.Join(", ", headers.Select(QuoteIdentifier));
+        var rowCount = values.GetLength(0);
+        var columnCount = values.GetLength(1);
+
+        for (var row = 0; row < rowCount; row++)
+        {
+            var literals = new List<string>();
+            for (var column = 0; column < columnCount; column++)
+            {
+                literals.Add(SqlLiteral(values[row, column]));
+            }
+         
+            ExecuteDuck(databaseId,$"INSERT INTO {qualifiedTable} ({fieldList}) VALUES ({string.Join(", ", literals)})");
+        }
     }
-}
 
     internal static int ExecuteSqlite(string alias, string sql)
 {

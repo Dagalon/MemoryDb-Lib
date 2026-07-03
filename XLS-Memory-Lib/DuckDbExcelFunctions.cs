@@ -50,9 +50,9 @@ public static class MemoryDbDuckDbExcelFunctions
     }
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.TABLE", Description = "Creates a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
-    public static string CreateTable(string alias, string table, object[,] range, string databaseId = "main")
+    public static string CreateTable(string table, object[,] range, string databaseId = "main")
     {
-        return Relational.RelationalCreateTable(alias, table, range, databaseId, isDuckDb: true);
+        return Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: true);
     }
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
@@ -61,7 +61,7 @@ public static class MemoryDbDuckDbExcelFunctions
         if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return Error(error);
         try
         {
-            Relational.RelationalInsertRows(alias, table, headers, values, databaseId, isDuckDb: true);
+            Relational.RelationalInsertRows(table, headers, values, databaseId, isDuckDb: true);
             return "SUCCESS";
         }
         catch (Exception ex)

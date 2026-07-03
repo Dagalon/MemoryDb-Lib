@@ -10,59 +10,69 @@ namespace SqliteDB_Memory_Lib
         /// <summary>
         /// Inserts multiple rows into the specified table by using parameterized statements.
         /// </summary>
-        public static void Insert(SqliteConnection db, string idDataBase, string idTable, List<string> fields,
-            object[,] values, string? extraEnd)
+        public static void Insert(
+            SqliteConnection db,
+            string idDataBase,
+            string idTable,
+            List<string> fields,
+            object[,] values,
+            string? extraEnd)
         {
-         
-            var filteredFields =
-                fields.Select((field, i) => Regex.Replace(field, @"[^0-9-a-zA-Z]" , "").Replace("\"", "").Replace(" ", "")).ToList();
-            var insertParameters = string.Join(",", filteredFields.Select((field, i) => "@" + field).ToList());
+            var quotedTable =
+                $"{SqLiteLiteTools.QuoteIdentifier(idDataBase)}.{SqLiteLiteTools.QuoteIdentifier(idTable)}";
 
-            var qry = !string.IsNullOrEmpty(extraEnd)
-                ? $"INSERT INTO {idDataBase}.{idTable} ({string.Join(",", fields)}) VALUES ({insertParameters}) {extraEnd}"
-                : $"INSERT INTO {idDataBase}.{idTable} ({string.Join(",", fields)}) VALUES ({insertParameters})";
+            var quotedFields = fields
+                .Select(SqLiteLiteTools.QuoteIdentifier)
+                .ToList();
+
+            var insertParameters = Enumerable
+                .Range(0, fields.Count)
+                .Select(SqLiteLiteTools.ParameterName)
+                .ToList();
+
+            var qry = !string.IsNullOrWhiteSpace(extraEnd)
+                ? $"INSERT INTO {quotedTable} ({string.Join(", ", quotedFields)}) VALUES ({string.Join(", ", insertParameters)}) {extraEnd}"
+                : $"INSERT INTO {quotedTable} ({string.Join(", ", quotedFields)}) VALUES ({string.Join(", ", insertParameters)})";
 
             lock (db)
             {
-                var transaction = db.BeginTransaction();
-                var noRows = values.GetLength(0);
-                var noColumns = values.GetLength(1);
+                using var transaction = db.BeginTransaction();
+                using var cmd = db.CreateCommand();
 
-                var cmd = db.CreateCommand();
                 cmd.Transaction = transaction;
                 cmd.CommandText = qry;
+
+                var noRows = values.GetLength(0);
+                var noColumns = values.GetLength(1);
 
                 try
                 {
                     for (var i = 0; i < noRows; i++)
                     {
-                        cmd.CommandText = qry;
-                        var row = values.SubArrayToList(i, i + 1, 0, noColumns)[0];
-                        var jumpRow = row.Count(x => string.IsNullOrEmpty(x.ToString())) ==
-                                           noColumns;
+                        cmd.Parameters.Clear();
+
+                        var jumpRow = true;
+
+                        for (var j = 0; j < noColumns; j++)
+                        {
+                            var value = values[i, j];
+
+                            if (!string.IsNullOrEmpty(value.ToString()))
+                                jumpRow = false;
+
+                            cmd.Parameters.AddWithValue(SqLiteLiteTools.ParameterName(j), value ?? DBNull.Value);
+                        }
 
                         if (!jumpRow)
-                        {
-                            for (var j = 0; j < noColumns; j++)
-                            {
-                                cmd.Parameters.AddWithValue(filteredFields[j], values[i, j]);
-                            }
-
                             cmd.ExecuteNonQuery();
-                        }
-                        
-                        cmd.Parameters.Clear();
                     }
 
                     transaction.Commit();
-                    cmd.Dispose();
-                    transaction.Dispose();
                 }
-                catch (Exception ex)
+                catch
                 {
                     transaction.Rollback();
-                    transaction.Dispose();
-                    throw new Exception(ex.Message);
+                    throw;
                 }
             }
         }
@@ -71,36 +81,49 @@ namespace SqliteDB_Memory_Lib
         /// <summary>
         /// Creates a table with the provided column definitions.
         /// </summary>
-        public static void CreateTable(SqliteConnection db, string idDataBase, string idTable,
-            List<string> headers, List<Type>? types = null)
+        public static void CreateTable(
+            SqliteConnection db,
+            string idDataBase,
+            string idTable,
+            object[,]? values,
+            List<string> headers,
+            List<Type>? types = null)
         {
+            static string QuoteIdentifier(string identifier)
+            {
+                if (string.IsNullOrWhiteSpace(identifier))
+                    throw new ArgumentException("SQL identifier cannot be null or empty.");
+
+                return "\"" + identifier.Replace("\"", "\"\"") + "\"";
+            }
+
+            if (types is null)
+            {
+                if (values is null)
+                    throw new ArgumentException("Values cannot be null when types are not provided.", nameof(values));
+
+                types = NetTypeToSqLiteType.InferTypes(values, headers.Count);
+            }
 
             var fieldsDefinition = new List<string>();
             var noFields = headers.Count;
 
-            if (types is null)
+            for (var i = 0; i < noFields; i++)
             {
-                for (var i = 0; i < noFields; i++)
-                {
-                    fieldsDefinition.Add(headers[i]);
-                }
-               
+                var columnName = QuoteIdentifier(headers[i]);
+                var sqliteType = NetTypeToSqLiteType.GetDbType(types[i]);
+
+                fieldsDefinition.Add($"{columnName} {sqliteType}");
             }
-            else
-            {
-                for (var i = 0; i < noFields; i++)
-                {
-                    var t = NetTypeToSqLiteType.GetDbType(types[i]);
-                    fieldsDefinition.Add(headers[i] + " " + t);
-                }
-               
-            }
+
+            var tableName =
+                $"{QuoteIdentifier(idDataBase)}.{QuoteIdentifier(idTable)}";
 
             var qry =
-                $"CREATE TABLE IF NOT EXISTS {idDataBase}.{idTable}({string.Join(",", fieldsDefinition)})";
-            var cmd = new SqliteCommand(qry, db);
-            cmd.ExecuteNonQuery();
+                $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", fieldsDefinition)})";
 
+            using var cmd = new SqliteCommand(qry, db);
+            cmd.ExecuteNonQuery();
         }
 
         /// <summary>

@@ -49,5 +49,40 @@ namespace SqliteDB_Memory_Lib
 
             return (value, typeof(string));
         }
+        
+        /// <summary>
+        /// Infers the .NET type of each column from the first row of data in the specified value range.
+        /// </summary>
+        public static List<Type> InferTypes(object[,] values, int noFields)
+        {
+            if (values.GetLength(0) == 0)
+                throw new ArgumentException("Cannot infer column types from an empty values range.", nameof(values));
+
+            var types = new List<Type>(noFields);
+
+            for (var j = 0; j < noFields; j++)
+            {
+                var value = values[0, j];
+
+                var type = value switch
+                {
+                    null => typeof(string),
+                    string => typeof(string),
+                    int => typeof(int),
+                    long => typeof(long),
+                    double => typeof(double),
+                    float => typeof(float),
+                    decimal => typeof(decimal),
+                    bool => typeof(bool),
+                    DateTime => typeof(DateTime),
+                    byte[] => typeof(byte[]),
+                    _ => typeof(string)
+                };
+
+                types.Add(type);
+            }
+
+            return types;
+        }
     }
 }
