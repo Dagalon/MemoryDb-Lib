@@ -12,6 +12,7 @@ A collection of helper libraries that make it simple to spin up disposable, in-m
 
 - [Why use these libraries?](#why-use-these-libraries)
 - [Project structure](#project-structure)
+- [Class structure](#class-structure)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
   - [Build the solution](#build-the-solution)
@@ -51,6 +52,10 @@ scripts/deploy.sh           # Linux/macOS deployment helper
 scripts/deploy.ps1          # PowerShell deployment helper
 Artifacts/                  # Generated packages and add-ins
 ```
+
+## Class structure
+
+For class diagrams, package relationships, and Excel function alignment diagrams, see [CLASS_STRUCTURE.md](CLASS_STRUCTURE.md).
 
 ## Requirements
 
@@ -131,41 +136,43 @@ The deploy command performs the following actions automatically:
 
 | Function | Description |
 | --- | --- |
-| `MEMDB.SQLITE.OPEN(alias, [path])` | Opens or creates a named SQLite connection, optionally from a database file. |
-| `MEMDB.SQLITE.ATTACH(alias, databaseId, [path], [removeIfExist])` | Attaches an in-memory or file-backed SQLite database to a connection. |
-| `MEMDB.SQLITE.DATABASES(alias)` | Spills the attached SQLite database names. |
-| `MEMDB.SQLITE.TABLES(alias, [databaseId])` | Spills the tables for an attached SQLite database. |
-| `MEMDB.SQLITE.CREATE.TABLE(alias, table, range, [databaseId])` | Creates a SQLite table from an Excel range whose first row contains headers. |
-| `MEMDB.SQLITE.INSERT(alias, table, range, [databaseId])` | Inserts Excel range rows into a SQLite table. |
-| `MEMDB.SQLITE.EXECUTE(alias, sql)` | Executes a non-query SQLite statement. |
-| `MEMDB.SQLITE.SCALAR(alias, sql)` | Executes a scalar SQLite query. |
-| `MEMDB.SQLITE.QUERY(alias, sql, [includeHeaders])` | Executes a SQLite query and spills a two-dimensional result. |
-| `MEMDB.SQLITE.DROP.TABLE(alias, table, [databaseId])` | Drops a SQLite table. |
-| `MEMDB.SQLITE.SAVE(alias, databaseId, path)` | Saves an attached SQLite database to a file. |
-| `MEMDB.SQLITE.CLOSE(alias)` | Closes a named SQLite connection. |
-| `MEMDB.SQLITE.CLOSE.ALL()` | Closes all SQLite connections. |
+| `MEMORY_DB.SQLITE.CREATE_DB(name, path)` | Opens or creates a named SQLite connection, optionally from a database file. |
+| `MEMORY_DB.SQLITE.ATTACH(alias, databaseId, path, removeIfExist)` | Attaches an in-memory or file-backed SQLite database to a connection. |
+| `MEMORY_DB.SQLITE.DATABASES(databaseId)` | Spills the attached SQLite database names. |
+| `MEMORY_DB.SQLITE.TABLES(databaseId, dependency)` | Spills the tables for an attached SQLite database. |
+| `MEMORY_DB.SQLITE.CREATE.TABLE(databaseId, table, range, dependency)` | Creates a SQLite table from an Excel range whose first row contains headers. |
+| `MEMORY_DB.SQLITE.INSERT(databaseId, table, range, dependency)` | Inserts Excel range rows into a SQLite table. |
+| `MEMORY_DB.SQLITE.EXECUTE(databaseId, sql, dependency)` | Executes a non-query SQLite statement. |
+| `MEMORY_DB.SQLITE.SCALAR(databaseId, sql, dependency)` | Executes a scalar SQLite query. |
+| `MEMORY_DB.SQLITE.QUERY(databaseId, sql, includeHeaders, dependency)` | Executes a SQLite query and spills a two-dimensional result. |
+| `MEMORY_DB.SQLITE.DROP.TABLE(databaseId, table)` | Drops a SQLite table. |
+| `MEMORY_DB.SQLITE.SAVE(databaseId, path)` | Saves an attached SQLite database to a file. |
+| `MEMORY_DB.SQLITE.CLOSE(databaseId)` | Closes a named SQLite connection. |
+| `MEMORY_DB.SQLITE.CLOSE.ALL()` | Closes all SQLite connections. |
 
 ### DuckDB functions (`Memory DB - DuckDB`)
 
 | Function | Description |
 | --- | --- |
-| `MEMDB.DUCKDB.OPEN(alias, [path])` | Opens or creates a named DuckDB connection, optionally from a database file. |
-| `MEMDB.DUCKDB.ATTACH(alias, databaseId, [path], [removeIfExist])` | Attaches an in-memory or file-backed DuckDB database to a connection. |
-| `MEMDB.DUCKDB.DATABASES(alias)` | Spills the attached DuckDB database names. |
-| `MEMDB.DUCKDB.CREATE.TABLE(alias, table, range, [databaseId])` | Creates or replaces a DuckDB table from an Excel range whose first row contains headers. |
-| `MEMDB.DUCKDB.INSERT(alias, table, range, [databaseId])` | Inserts Excel range rows into a DuckDB table. |
-| `MEMDB.DUCKDB.EXECUTE(alias, sql)` | Executes a non-query DuckDB statement. |
-| `MEMDB.DUCKDB.SCALAR(alias, sql)` | Executes a scalar DuckDB query. |
-| `MEMDB.DUCKDB.QUERY(alias, sql, [includeHeaders])` | Executes a DuckDB query and spills a two-dimensional result. |
-| `MEMDB.DUCKDB.CLOSE(alias)` | Closes a named DuckDB connection. |
-| `MEMDB.DUCKDB.CLOSE.ALL()` | Closes all DuckDB connections. |
+| `MEMORY_DB.DUCKDB.CREATE_DB(name, path)` | Opens or creates a named DuckDB connection, optionally from a database file. |
+| `MEMORY_DB.DUCKDB.ATTACH(alias, databaseId, path, removeIfExist)` | Attaches an in-memory or file-backed DuckDB database to a connection. |
+| `MEMORY_DB.DUCKDB.DATABASES(databaseId)` | Spills the attached DuckDB database names. |
+| `MEMORY_DB.DUCKDB.TABLES(databaseId, dependency)` | Spills the tables for an attached DuckDB database. |
+| `MEMORY_DB.DUCKDB.CREATE.TABLE(databaseId, table, range, dependency)` | Creates or replaces a DuckDB table from an Excel range whose first row contains headers. |
+| `MEMORY_DB.DUCKDB.INSERT(databaseId, table, range, dependency)` | Inserts Excel range rows into a DuckDB table. |
+| `MEMORY_DB.DUCKDB.EXECUTE(databaseId, sql, dependency)` | Executes a non-query DuckDB statement. |
+| `MEMORY_DB.DUCKDB.SCALAR(databaseId, sql, dependency)` | Executes a scalar DuckDB query. |
+| `MEMORY_DB.DUCKDB.QUERY(databaseId, sql, includeHeaders, dependency)` | Executes a DuckDB query and spills a two-dimensional result. |
+| `MEMORY_DB.DUCKDB.DROP.TABLE(databaseId, table)` | Drops a DuckDB table. |
+| `MEMORY_DB.DUCKDB.CLOSE(databaseId)` | Closes a named DuckDB connection. |
+| `MEMORY_DB.DUCKDB.CLOSE.ALL()` | Closes all DuckDB connections. |
 
 Example workbook formulas:
 
 ```excel
-=MEMDB.SQLITE.OPEN("demo")
-=MEMDB.SQLITE.CREATE.TABLE("demo", "People", A1:B3)
-=MEMDB.SQLITE.QUERY("demo", "SELECT * FROM People")
+=MEMORY_DB.SQLITE.CREATE_DB("demo", "")
+=MEMORY_DB.SQLITE.CREATE.TABLE("demo", "People", A1:B3, NOW())
+=MEMORY_DB.SQLITE.QUERY("demo", "SELECT * FROM People", TRUE, NOW())
 ```
 
 Load `Artifacts/addin/XLS-Memory-Lib.xll` from Excel via **File > Options > Add-ins > Manage Excel Add-ins > Browse**.

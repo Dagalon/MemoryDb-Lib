@@ -1,10 +1,11 @@
 ﻿using DuckDB.NET.Data;
 using DuckDB.NET.Data.DataChunk.Reader;
 using DuckDB.NET.Data.DataChunk.Writer;
+using System.Text.RegularExpressions;
 
 namespace DuckDb_Memory_Lib;
 
-public static class DuckTools
+public static partial class DuckTools
 {
     /// <summary>
     /// Creates a new DuckDb connection using the provided path or an in-memory data source.
@@ -65,6 +66,37 @@ public static class DuckTools
         return EnumsDuckMemory.Output.SUCCESS;
     }
     
+
+    /// <summary>
+    /// Escapes and quotes a SQL identifier so it can be safely used in DuckDB statements.
+    /// </summary>
+    public static string QuoteIdentifier(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            throw new ArgumentException("SQL identifier cannot be null or empty.", nameof(identifier));
+
+        return "\"" + identifier.Replace("\"", "\"\"") + "\"";
+    }
+
+    /// <summary>
+    /// Generates a unique SQL parameter name for use in parameterized SQL commands.
+    /// </summary>
+    public static string ParameterName(int index)
+    {
+        return "@p" + index;
+    }
+
+    /// <summary>
+    /// Resolves the specified SQL input by reading it from a text file when a valid file path is provided; otherwise, returns the input as a SQL statement.
+    /// </summary>
+    public static string ResolveSql(string sqlOrPath)
+    {
+        if (string.IsNullOrWhiteSpace(sqlOrPath))
+            throw new ArgumentException("SQL query or file path cannot be empty.", nameof(sqlOrPath));
+
+        return File.Exists(sqlOrPath) ? File.ReadAllText(sqlOrPath) : sqlOrPath;
+    }
+
     /// <summary>
     /// Retrieves the list of database aliases attached to the connection.
     /// </summary>
@@ -181,7 +213,7 @@ public static class DuckTools
         try
         {
             List<string>? tables = [];
-            var qry = @"SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' AND table_type = 'BASE TABLE';";
+            var qry = $"SELECT table_name FROM information_schema.tables WHERE table_catalog = '{idDataBase.Replace("'", "''")}' AND table_type = 'BASE TABLE';";
             var cmd = new DuckDBCommand(qry, db);
             var qryReader = cmd.ExecuteReader();
 
@@ -191,6 +223,11 @@ public static class DuckTools
             }
 
             qryReader.Close();
+            if (tables.Count == 0)
+            {
+                tables.Add($"There is not tables in {idDataBase}");
+            }
+
             return (EnumsDuckMemory.Output.SUCCESS, tables);
         }
         catch
@@ -199,5 +236,62 @@ public static class DuckTools
         }
     }
 
-  
+    /// <summary>
+    /// Drops a table from the specified database alias when it exists.
+    /// </summary>
+    public static (EnumsDuckMemory.Output, string?) DropTable(DuckDBConnection db, string idDataBase, string idTable)
+    {
+        if (string.IsNullOrEmpty(idDataBase))
+        {
+            idDataBase = "main";
+        }
+
+        var tablesResult = GetListTables(db, idDataBase);
+        if (tablesResult.Item1 != EnumsDuckMemory.Output.SUCCESS)
+        {
+            return (tablesResult.Item1, $"Error accessing database {idDataBase}");
+        }
+
+        var listTables = tablesResult.Item2;
+        if (listTables == null || !listTables.Contains(idTable))
+            return (EnumsDuckMemory.Output.TABLE_NOT_FOUND, $"The data base {idDataBase} doesn't contain the table {idTable}");
+
+        try
+        {
+            var qry = $"DROP TABLE {QuoteIdentifier(idDataBase)}.{QuoteIdentifier(idTable)}";
+            var cmd = new DuckDBCommand(qry, db);
+            cmd.ExecuteNonQuery();
+            return (EnumsDuckMemory.Output.SUCCESS, "");
+        }
+        catch
+        {
+            return (EnumsDuckMemory.Output.DB_NOT_FOUND, "Error dropping table");
+        }
+    }
+
+    /// <summary>
+    /// Detaches a database alias from the connection.
+    /// </summary>
+    public static EnumsDuckMemory.Output DeleteDataBase(DuckDBConnection db, string idDatabase)
+    {
+        if (string.IsNullOrEmpty(idDatabase))
+        {
+            return EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY;
+        }
+
+        try
+        {
+            var qry = $"DETACH DATABASE {QuoteIdentifier(idDatabase)}";
+            var cmd = new DuckDBCommand(qry, db);
+            cmd.ExecuteNonQuery();
+            return EnumsDuckMemory.Output.SUCCESS;
+        }
+        catch
+        {
+            return EnumsDuckMemory.Output.DB_NOT_FOUND;
+        }
+    }
+
+    [GeneratedRegex(@"@[A-za-z0-9]+")]
+    private static partial Regex MyRegex();
 }
