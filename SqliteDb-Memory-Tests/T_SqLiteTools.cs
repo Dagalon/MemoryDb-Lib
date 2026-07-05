@@ -56,6 +56,9 @@ public class SqLiteToolsTests
         var dbOutput = SqLiteLiteTools.CreateDatabase(conn, databaseId, null);
         Assert.That(dbOutput, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
 
+        var duplicateAttachOutput = SqLiteLiteTools.AttachedDataBase(conn, null, databaseId);
+        Assert.That(duplicateAttachOutput, Is.EqualTo(EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE));
+
         var tableOutput = SqLiteLiteTools.CreateTable(
             conn,
             databaseId,
@@ -79,7 +82,11 @@ public class SqLiteToolsTests
         });
 
         var missingDropOutput = SqLiteLiteTools.DropTable(conn, databaseId, tableId);
-        Assert.That(missingDropOutput.Item1, Is.EqualTo(EnumsSqliteMemory.Output.TABLE_NOT_FOUND));
+        Assert.Multiple(() =>
+        {
+            Assert.That(missingDropOutput.Item1, Is.EqualTo(EnumsSqliteMemory.Output.TABLE_NOT_FOUND));
+            Assert.That(missingDropOutput.Item2, Is.EqualTo($"Database '{databaseId}' does not contain table '{tableId}'."));
+        });
 
         var deleteOutput = SqLiteLiteTools.DeleteDataBase(conn, databaseId);
         Assert.That(deleteOutput, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));

@@ -44,9 +44,9 @@ public static partial class SqLiteLiteTools
 
         var attachedOutPut = AttachedDataBase(connection, path, idDataBase);
 
-        if (attachedOutPut == EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE)
+        if (attachedOutPut != EnumsSqliteMemory.Output.SUCCESS)
         {
-            return  EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE;
+            return attachedOutPut;
         }
 
         if (walMode)
@@ -331,20 +331,19 @@ public static partial class SqLiteLiteTools
 
             }
 
-            var strConnection = string.IsNullOrEmpty(path)?":memory:":path;
-            string  attachedQry;
-            attachedQry = string.IsNullOrEmpty(aliasDataBase) ? 
-                $"ATTACH '{strConnection}'" : 
-                $"ATTACH '{strConnection}' AS '{aliasDataBase}' ";
+            var strConnection = (string.IsNullOrEmpty(path) ? ":memory:" : path).Replace("'", "''");
+            var attachedQry = string.IsNullOrEmpty(aliasDataBase)
+                ? $"ATTACH '{strConnection}'"
+                : $"ATTACH '{strConnection}' AS {QuoteIdentifier(aliasDataBase)}";
 
             try
             {
-                var cmd = new SqliteCommand(attachedQry, db);
+                using var cmd = new SqliteCommand(attachedQry, db);
                 cmd.ExecuteNonQuery();
             }
             catch (SqliteException)
             {
-                return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+                return EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE;
             }
 
             return EnumsSqliteMemory.Output.SUCCESS;
@@ -378,8 +377,8 @@ public static partial class SqLiteLiteTools
     public static List<string>? GetListDataBase(SqliteConnection db)
     {
 
-        var cmd = new SqliteCommand("PRAGMA database_list", db);
-        var dataBases = cmd.ExecuteReader();
+        using var cmd = new SqliteCommand("PRAGMA database_list", db);
+        using var dataBases = cmd.ExecuteReader();
         List<string> idList = [];
 
         while (dataBases.Read())
@@ -387,7 +386,6 @@ public static partial class SqLiteLiteTools
             idList.Add(dataBases[1].ToString()!);
         }
 
-        dataBases.Close();
         return idList;
     }
     
@@ -408,6 +406,11 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static (EnumsSqliteMemory.Output, List<string>?) GetListTables(SqliteConnection db, string idDataBase)
     {
+        if (string.IsNullOrEmpty(idDataBase))
+        {
+            idDataBase = "main";
+        }
+
         var dataBases = GetListDataBase(db);
 
         if (dataBases == null || !dataBases.Contains(idDataBase))
@@ -418,22 +421,20 @@ public static partial class SqLiteLiteTools
         try
         {
             List<string>? tables = [];
-            var qry = $"SELECT name FROM {idDataBase + "." + "sqlite_master"}   WHERE type = 'table'";
-            var cmd = new SqliteCommand(qry, db);
-            var qryReader = cmd.ExecuteReader();
+            var qry = $"SELECT name FROM {QuoteIdentifier(idDataBase)}.sqlite_master WHERE type = 'table'";
+            using var cmd = new SqliteCommand(qry, db);
+            using var qryReader = cmd.ExecuteReader();
 
             while (qryReader.Read())
             {
                 tables.Add(qryReader[0].ToString()!);
             }
-
-            qryReader.Close();
             if (tables.Count > 0)
             {
                 return (EnumsSqliteMemory.Output.SUCCESS, tables);
             }
 
-            tables.Add($"There is not tables in {idDataBase}");
+            tables.Add(NoTablesMessage(idDataBase));
             return (EnumsSqliteMemory.Output.SUCCESS, tables);
         }
         catch
@@ -640,23 +641,23 @@ public static partial class SqLiteLiteTools
         var tablesResult = GetListTables(db, idDataBase);
         if (tablesResult.Item1 != EnumsSqliteMemory.Output.SUCCESS)
         {
-            return (tablesResult.Item1, $"Error accessing database {idDataBase}");
+            return (tablesResult.Item1, ErrorAccessingDatabaseMessage(idDataBase));
         }
 
         var listTables = tablesResult.Item2;
         if (listTables == null || !listTables.Contains(idTable))
-            return (EnumsSqliteMemory.Output.TABLE_NOT_FOUND, $"The data base {idDataBase} doesn't contain the table {idTable}");
+            return (EnumsSqliteMemory.Output.TABLE_NOT_FOUND, TableNotFoundMessage(idDataBase, idTable));
 
         try
         {
-            var qry = $"DROP TABLE {idDataBase}.{idTable}";
-            var cmd = new SqliteCommand(qry, db);
-            cmd.ExecuteReader();
-            return (EnumsSqliteMemory.Output.SUCCESS, "");
+            var qry = $"DROP TABLE {QuoteIdentifier(idDataBase)}.{QuoteIdentifier(idTable)}";
+            using var cmd = new SqliteCommand(qry, db);
+            cmd.ExecuteNonQuery();
+            return (EnumsSqliteMemory.Output.SUCCESS, string.Empty);
         }
         catch
         {
-            return (EnumsSqliteMemory.Output.DB_NOT_FOUND, "Error dropping table");
+            return (EnumsSqliteMemory.Output.DB_NOT_FOUND, ErrorDroppingTableMessage(idDataBase, idTable));
         }
     }
 
@@ -672,9 +673,9 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var qry = $"DETACH DATABASE {idDatabase}";
-            var cmd = new SqliteCommand(qry, db);
-            cmd.ExecuteReader();
+            var qry = $"DETACH DATABASE {QuoteIdentifier(idDatabase)}";
+            using var cmd = new SqliteCommand(qry, db);
+            cmd.ExecuteNonQuery();
             return EnumsSqliteMemory.Output.SUCCESS;
         }
         catch
@@ -682,6 +683,14 @@ public static partial class SqLiteLiteTools
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
+
+    private static string NoTablesMessage(string idDataBase) => $"Database '{idDataBase}' does not contain tables.";
+
+    private static string ErrorAccessingDatabaseMessage(string idDataBase) => $"Error accessing database '{idDataBase}'.";
+
+    private static string TableNotFoundMessage(string idDataBase, string idTable) => $"Database '{idDataBase}' does not contain table '{idTable}'.";
+
+    private static string ErrorDroppingTableMessage(string idDataBase, string idTable) => $"Error dropping table '{idTable}' from database '{idDataBase}'.";
 
     [GeneratedRegex(@"@[A-za-z0-9]+")]
     private static partial Regex MyRegex();
