@@ -48,8 +48,8 @@ public class SqLiteToolsTests
     [Test]
     public void T_GetListTables_DropTable_And_DeleteDataBase_Handle_Table_And_Database_Lifecycle()
     {
-        var databaseId = $"SQLITE_DB_{Guid.NewGuid():N}";
-        var tableId = $"SQLITE_TABLE_{Guid.NewGuid():N}";
+        var databaseId = $"TEST_DB_{Guid.NewGuid():N}";
+        var tableId = $"TEST_TABLE_{Guid.NewGuid():N}";
         var manager = ConnectionManager.GetInstance();
         var conn = manager.GetConnection(databaseId);
 
