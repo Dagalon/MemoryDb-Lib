@@ -8,7 +8,7 @@ internal static class Relational
 {
     internal static string RelationalCreateTable(string table, object[,] range, string databaseId, bool isDuckDb)
 {
-    if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return $"ERROR: {error}";
+    if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
 
     try
     {
@@ -16,36 +16,36 @@ internal static class Relational
         {
             ExecuteDuck(databaseId, BuildCreateTableSql(databaseId, table, headers, values));
             RelationalInsertRows(table, headers, values, databaseId, isDuckDb: true);
-            return "SUCCESS";
+            return ExcelOutput.Success;
         }
 
         var connection = SqliteDB_Memory_Lib.ConnectionManager.GetInstance().GetConnection(databaseId);
-        return SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table,  headers, values).ToString();
+        return ExcelOutput.FromStatus(SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table,  headers, values));
     }
     catch (Exception ex)
     {
-        return  string.Concat("ERROR-:", ex.Message);
+        return ExcelOutput.Error(ex);
     }
 }
 
     internal static string RelationalExecute(string alias, string sql, bool isDuckDb)
 {
-    if (string.IsNullOrWhiteSpace(sql)) return "ERROR: sql is required";
+    if (string.IsNullOrWhiteSpace(sql)) return ExcelOutput.Error("sql is required");
 
     try
     {
-        var affectedRows = isDuckDb ? ExecuteDuck(alias, sql) : ExecuteSqlite(alias, sql);
-        return affectedRows.ToString(CultureInfo.InvariantCulture);
+        _ = isDuckDb ? ExecuteDuck(alias, sql) : ExecuteSqlite(alias, sql);
+        return ExcelOutput.Success;
     }
     catch (Exception ex)
     {
-        return string.Concat("ERROR-:", ex.Message);
+        return ExcelOutput.Error(ex);
     }
 }
 
     internal static object RelationalScalar(string alias, string sql, bool isDuckDb)
 {
-    if (string.IsNullOrWhiteSpace(sql)) return "ERROR: sql is required";
+    if (string.IsNullOrWhiteSpace(sql)) return ExcelOutput.Error("sql is required");
 
     try
     {
@@ -54,7 +54,7 @@ internal static class Relational
     }
     catch (Exception ex)
     {
-        return $"ERROR: {ex.Message}";
+        return ExcelOutput.Error(ex);
     }
 }
 

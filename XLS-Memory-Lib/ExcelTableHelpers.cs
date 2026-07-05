@@ -90,7 +90,7 @@ internal static class Tables
         return true;
     }
 
-    public static object[,] ErrorTable(string message) => new object[,] { { $"ERROR: {message}" } };
+    public static object[,] ErrorTable(string message) => ExcelOutput.ErrorTable(message);
 
     public static object NormalizeInput(object value)
     {

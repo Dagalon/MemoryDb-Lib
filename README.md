@@ -115,6 +115,8 @@ The deploy command performs the following actions automatically:
 
 `XLS-Memory-Lib` is an Excel-DNA add-in compatible with the repository's .NET 10.0 projects. It produces a 64-bit add-in named `XLS-Memory-Lib.xll` and separates worksheet functions by database type using Excel categories: **Memory DB - LiteDB**, **Memory DB - SQLite**, and **Memory DB - DuckDB**.
 
+Excel worksheet commands use a consistent text status contract: successful operations return `SUCCESS`, and failures return `ERROR: <message>`. Functions that spill tabular data return the same error format in the first cell when an operation fails.
+
 ### Common functions
 
 | Function | Description |

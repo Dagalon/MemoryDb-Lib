@@ -7,21 +7,19 @@ public static class MemoryDbSqliteExcelFunctions
     private const string Category = "Memory DB - SQLite";
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE_DB", Description = "Opens or creates a named SQLite in-memory connection, optionally from a database file path.", Category = Category)]
-    public static object Open(string name, string path)
+    public static string Open(string name, string path)
     {
         try
         {
             var conn =  Manager.GetConnection(name, string.IsNullOrWhiteSpace(path) ? null : path);
             var output = SqliteDB_Memory_Lib.SqLiteLiteTools.CreateDatabase(conn,  NullIfBlank(name), NullIfBlank(path));
 
-            return output == SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.SUCCESS
-                ? "SUCCESS"
-                : "ERROR-: " + output;
+            return ExcelOutput.FromStatus(output);
 
         }
         catch (Exception ex)
         {
-            return  string.Concat("ERROR-: ", Error(ex.Message));
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -31,11 +29,11 @@ public static class MemoryDbSqliteExcelFunctions
         try
         {
             var connection = Manager.GetConnection(alias);
-            return SqliteDB_Memory_Lib.SqLiteLiteTools.AttachedDataBase(connection, NullIfBlank(path), NullIfBlank(databaseId), removeIfExist).ToString();
+            return ExcelOutput.FromStatus(SqliteDB_Memory_Lib.SqLiteLiteTools.AttachedDataBase(connection, NullIfBlank(path), NullIfBlank(databaseId), removeIfExist));
         }
         catch (Exception ex)
         {
-            return Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -74,33 +72,27 @@ public static class MemoryDbSqliteExcelFunctions
     {
         try
         {
-            var output =  Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: false);
-
-            if (output == "SUCCESS")
-            {
-                return "SUCCES";
-            }
-
-            return "ERROR:-" + output;
+            var output = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: false);
+            return ExcelOutput.FromOperationString(output);
         }
         catch (Exception ex)
         {
-            return "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
     
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.INSERT", Description = "Inserts rows into a SQLite table from an Excel range. First row must contain headers.", Category = Category)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {
-        if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return Error(error);
+        if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
         try
         {
             var connection = Manager.GetConnection(databaseId);
-            return SqliteDB_Memory_Lib.SqLiteLiteTools.Insert(connection, databaseId, table, headers, values, string.Empty).ToString();
+            return ExcelOutput.FromStatus(SqliteDB_Memory_Lib.SqLiteLiteTools.Insert(connection, databaseId, table, headers, values, string.Empty));
         }
         catch (Exception ex)
         {
-            return  "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -125,7 +117,7 @@ public static class MemoryDbSqliteExcelFunctions
         {
             return new object[,]
             {
-                { "ERROR:- " + Error(ex.Message) }
+                { ExcelOutput.Error(ex) }
             };
         }
     }
@@ -139,14 +131,14 @@ public static class MemoryDbSqliteExcelFunctions
 
             return status switch
             {
-                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.SUCCESS => "SUCCESS",
-                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.TABLE_NOT_FOUND => msg,
-                _ => status.ToString()
+                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.SUCCESS => ExcelOutput.Success,
+                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.ToString()),
+                _ => ExcelOutput.Error(status.ToString())
             };
         }
         catch (Exception ex)
         {
-            return  "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -155,11 +147,11 @@ public static class MemoryDbSqliteExcelFunctions
     {
         try
         {
-            return SqliteDB_Memory_Lib.SqLiteLiteTools.SaveDataBase(Manager.GetConnection(databaseId), databaseId, path).ToString();
+            return ExcelOutput.FromStatus(SqliteDB_Memory_Lib.SqLiteLiteTools.SaveDataBase(Manager.GetConnection(databaseId), databaseId, path));
         }
         catch (Exception ex)
         {
-            return  "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -167,17 +159,16 @@ public static class MemoryDbSqliteExcelFunctions
     public static string Close(string databaseId)
     {
         Manager.CloseConnection(databaseId);
-        return "SUCCESS";
+        return ExcelOutput.Success;
     }
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.CLOSE.ALL", Description = "Closes all SQLite connections.", Category = Category)]
     public static string CloseAll()
     {
         Manager.CloseAllConnections();
-        return "SUCCESS";
+        return ExcelOutput.Success;
     }
 
     private static SqliteDB_Memory_Lib.ConnectionManager Manager => SqliteDB_Memory_Lib.ConnectionManager.GetInstance();
     private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
-    private static string Error(string message) => $"ERROR: {message}";
 }

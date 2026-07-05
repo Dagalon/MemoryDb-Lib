@@ -7,20 +7,18 @@ public static class MemoryDbDuckDbExcelFunctions
     private const string Category = "Memory DB - DuckDB";
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE_DB", Description = "Opens or creates a named DuckDB in-memory connection, optionally from a database file path.", Category = Category)]
-    public static object Open(string name, string path)
+    public static string Open(string name, string path)
     {
         try
         {
             var conn = Manager.GetConnection(name, NullIfBlank(path));
             var output = DuckDb_Memory_Lib.DuckTools.CreateDatabase(conn, NullIfBlank(name), NullIfBlank(path));
 
-            return output == DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS
-                ? "SUCCESS"
-                : "ERROR-: " + output;
+            return ExcelOutput.FromStatus(output);
         }
         catch (Exception ex)
         {
-            return string.Concat("ERROR-: ", Error(ex.Message));
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -30,11 +28,11 @@ public static class MemoryDbDuckDbExcelFunctions
         try
         {
             var connection = Manager.GetConnection(alias);
-            return DuckDb_Memory_Lib.DuckTools.AttachedDataBase(connection, NullIfBlank(path), NullIfBlank(databaseId), removeIfExist).ToString();
+            return ExcelOutput.FromStatus(DuckDb_Memory_Lib.DuckTools.AttachedDataBase(connection, NullIfBlank(path), NullIfBlank(databaseId), removeIfExist));
         }
         catch (Exception ex)
         {
-            return Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -74,11 +72,11 @@ public static class MemoryDbDuckDbExcelFunctions
         try
         {
             var output = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: true);
-            return output == "SUCCESS" ? "SUCCESS" : "ERROR:-" + output;
+            return ExcelOutput.FromOperationString(output);
         }
         catch (Exception ex)
         {
-            return "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -94,28 +92,26 @@ public static class MemoryDbDuckDbExcelFunctions
                 table,
                 parquetPath);
 
-            return output == DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS
-                ? "SUCCESS"
-                : "ERROR:-" + output;
+            return ExcelOutput.FromStatus(output);
         }
         catch (Exception ex)
         {
-            return "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {
-        if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return Error(error);
+        if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
         try
         {
             Relational.RelationalInsertRows(table, headers, values, databaseId, isDuckDb: true);
-            return "SUCCESS";
+            return ExcelOutput.Success;
         }
         catch (Exception ex)
         {
-            return Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -135,7 +131,7 @@ public static class MemoryDbDuckDbExcelFunctions
         }
         catch (Exception ex)
         {
-            return new object[,] { { "ERROR:- " + Error(ex.Message) } };
+            return new object[,] { { ExcelOutput.Error(ex) } };
         }
     }
 
@@ -147,14 +143,14 @@ public static class MemoryDbDuckDbExcelFunctions
             var (status, msg) = DuckDb_Memory_Lib.DuckTools.DropTable(Manager.GetConnection(databaseId), databaseId, table);
             return status switch
             {
-                DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS => "SUCCESS",
-                DuckDb_Memory_Lib.EnumsDuckMemory.Output.TABLE_NOT_FOUND => msg,
-                _ => status.ToString()
+                DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS => ExcelOutput.Success,
+                DuckDb_Memory_Lib.EnumsDuckMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.ToString()),
+                _ => ExcelOutput.Error(status.ToString())
             };
         }
         catch (Exception ex)
         {
-            return "ERROR:-" + Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -162,17 +158,16 @@ public static class MemoryDbDuckDbExcelFunctions
     public static string Close(string databaseId)
     {
         Manager.CloseConnection(databaseId);
-        return "SUCCESS";
+        return ExcelOutput.Success;
     }
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE.ALL", Description = "Closes all DuckDB connections.", Category = Category)]
     public static string CloseAll()
     {
         Manager.CloseAllConnections();
-        return "SUCCESS";
+        return ExcelOutput.Success;
     }
 
     private static DuckDb_Memory_Lib.ConnectionManager Manager => DuckDb_Memory_Lib.ConnectionManager.GetInstance();
     private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
-    private static string Error(string message) => $"ERROR: {message}";
 }

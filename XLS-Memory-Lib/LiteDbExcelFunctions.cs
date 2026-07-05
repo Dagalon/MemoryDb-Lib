@@ -10,16 +10,15 @@ public static class MemoryDbLiteDbExcelFunctions
     [ExcelFunction(Name = "MEMORY_DB.LITEDB.CREATE", Description = "Creates or replaces a named in-memory LiteDB database, or opens a file-backed database when path is provided.", Category = Category)]
     public static string Create(string alias, string path = "", bool replaceExisting = true, bool shared = false)
     {
-        if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
-        var result = Manager.CreateDatabase(alias, NullIfBlank(path), replaceExisting, shared);
-        return result.ToString();
+        if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
+        return ExcelOutput.FromStatus(Manager.CreateDatabase(alias, NullIfBlank(path), replaceExisting, shared));
     }
 
     [ExcelFunction(Name = "MEMORY_DB.LITEDB.CLOSE", Description = "Closes a named LiteDB database and optionally persists it to disk.", Category = Category)]
     public static string Close(string alias, string pathToKeep = "")
     {
-        if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
-        return Manager.Close(alias, NullIfBlank(pathToKeep)).ToString();
+        if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
+        return ExcelOutput.FromStatus(Manager.Close(alias, NullIfBlank(pathToKeep)));
     }
 
     [ExcelFunction(Name = "MEMORY_DB.LITEDB.COLLECTIONS", Description = "Lists the collections registered in a LiteDB database.", Category = Category)]
@@ -33,23 +32,23 @@ public static class MemoryDbLiteDbExcelFunctions
     [ExcelFunction(Name = "MEMORY_DB.LITEDB.INSERT.JSON", Description = "Inserts one JSON document into a LiteDB collection.", Category = Category)]
     public static string InsertJson(string alias, string collection, string jsonDocument)
     {
-        if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
-        if (string.IsNullOrWhiteSpace(collection)) return Error("collection is required");
-        if (string.IsNullOrWhiteSpace(jsonDocument)) return Error("jsonDocument is required");
+        if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
+        if (string.IsNullOrWhiteSpace(collection)) return ExcelOutput.Error("collection is required");
+        if (string.IsNullOrWhiteSpace(jsonDocument)) return ExcelOutput.Error("jsonDocument is required");
 
         try
         {
             var database = Manager.GetDatabase(alias, createIfMissing: false);
-            if (database is null) return LiteDb_Memory_Lib.EnumsLiteDbMemory.Output.DB_NOT_FOUND.ToString();
+            if (database is null) return ExcelOutput.FromStatus(LiteDb_Memory_Lib.EnumsLiteDbMemory.Output.DB_NOT_FOUND);
 
             var document = LiteDB.JsonSerializer.Deserialize(jsonDocument).AsDocument;
             database.GetCollection<BsonDocument>(collection).Insert(document);
             database.Checkpoint();
-            return LiteDb_Memory_Lib.EnumsLiteDbMemory.Output.SUCCESS.ToString();
+            return ExcelOutput.Success;
         }
         catch (Exception ex)
         {
-            return Error(ex.Message);
+            return ExcelOutput.Error(ex);
         }
     }
 
@@ -62,7 +61,7 @@ public static class MemoryDbLiteDbExcelFunctions
         try
         {
             var database = Manager.GetDatabase(alias, createIfMissing: false);
-            if (database is null) return Tables.ErrorTable("database not found");
+            if (database is null) return Tables.ErrorTable(LiteDb_Memory_Lib.EnumsLiteDbMemory.Output.DB_NOT_FOUND.ToString());
 
             var rows = database.GetCollection<BsonDocument>(collection)
                 .FindAll()
@@ -79,13 +78,12 @@ public static class MemoryDbLiteDbExcelFunctions
     [ExcelFunction(Name = "MEMORY_DB.LITEDB.DELETE", Description = "Deletes one LiteDB document by id from a collection.", Category = Category)]
     public static string Delete(string alias, string collection, string id)
     {
-        if (string.IsNullOrWhiteSpace(alias)) return Error("alias is required");
-        if (string.IsNullOrWhiteSpace(collection)) return Error("collection is required");
-        if (string.IsNullOrWhiteSpace(id)) return Error("id is required");
-        return LiteDb_Memory_Lib.LiteDbTools.Delete<BsonDocument>(Manager, alias, collection, id).ToString();
+        if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
+        if (string.IsNullOrWhiteSpace(collection)) return ExcelOutput.Error("collection is required");
+        if (string.IsNullOrWhiteSpace(id)) return ExcelOutput.Error("id is required");
+        return ExcelOutput.FromStatus(LiteDb_Memory_Lib.LiteDbTools.Delete<BsonDocument>(Manager, alias, collection, id));
     }
 
     private static LiteDb_Memory_Lib.ConnectionManager Manager => LiteDb_Memory_Lib.ConnectionManager.Instance();
     private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
-    private static string Error(string message) => $"ERROR: {message}";
 }
