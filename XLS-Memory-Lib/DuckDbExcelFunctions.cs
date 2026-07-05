@@ -82,6 +82,28 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE", Description = "Creates or replaces a DuckDB table from a parquet file path.", Category = Category)]
+    public static string CreateParquetTable(string databaseId, string table, string parquetPath, object dependency)
+    {
+        try
+        {
+            var connection = Manager.GetConnection(databaseId);
+            var output = DuckDb_Memory_Lib.QueryExecutor.CreateParquetTable(
+                connection,
+                string.IsNullOrWhiteSpace(databaseId) ? "main" : databaseId,
+                table,
+                parquetPath);
+
+            return output == DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS
+                ? "SUCCESS"
+                : "ERROR:-" + output;
+        }
+        catch (Exception ex)
+        {
+            return "ERROR:-" + Error(ex.Message);
+        }
+    }
+
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {

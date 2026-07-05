@@ -1,11 +1,10 @@
 ﻿using DuckDB.NET.Data;
 using DuckDB.NET.Data.DataChunk.Reader;
 using DuckDB.NET.Data.DataChunk.Writer;
-using System.Text.RegularExpressions;
 
 namespace DuckDb_Memory_Lib;
 
-public static partial class DuckTools
+public static class DuckTools
 {
     /// <summary>
     /// Creates a new DuckDb connection using the provided path or an in-memory data source.
@@ -291,7 +290,4 @@ public static partial class DuckTools
             return EnumsDuckMemory.Output.DB_NOT_FOUND;
         }
     }
-
-    [GeneratedRegex(@"@[A-za-z0-9]+")]
-    private static partial Regex MyRegex();
 }

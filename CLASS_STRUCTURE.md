@@ -102,6 +102,7 @@ flowchart TB
         DDatabases[DATABASES databaseId]
         DTables[TABLES databaseId, dependency]
         DCreateTable[CREATE.TABLE databaseId, table, range, dependency]
+        DParquet[CREATE.PARQUET.TABLE databaseId, table, parquetPath, dependency]
         DInsert[INSERT databaseId, table, range, dependency]
         DExecute[EXECUTE databaseId, sql, dependency]
         DScalar[SCALAR databaseId, sql, dependency]
@@ -116,6 +117,7 @@ flowchart TB
     SDatabases -. aligned .- DDatabases
     STables -. aligned .- DTables
     SCreateTable -. aligned .- DCreateTable
+    DParquet -. DuckDB parquet import .- DCreateTable
     SInsert -. aligned .- DInsert
     SExecute -. aligned .- DExecute
     SScalar -. aligned .- DScalar

@@ -50,11 +50,15 @@ public static class QueryExecutor
     }
     
     /// <summary>
-    /// Creates a table from parquet file
+    /// Creates or replaces a table from a parquet file.
     /// </summary>
-    
     public static EnumsDuckMemory.Output CreateParquetTable(DuckDBConnection db, string idDataBase, string idTable, string parquetPathFile)
     {
+        if (string.IsNullOrWhiteSpace(parquetPathFile))
+        {
+            return EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY;
+        }
+
         if (!File.Exists(parquetPathFile))
         {
             return EnumsDuckMemory.Output.PATH_NOT_FOUND;
@@ -62,7 +66,9 @@ public static class QueryExecutor
 
         try
         {
-            var qry = $@"CREATE TABLE ""{idDataBase}"".""{idTable}"" AS SELECT * FROM '{parquetPathFile}';";
+            var tableName = $"{DuckTools.QuoteIdentifier(idDataBase)}.{DuckTools.QuoteIdentifier(idTable)}";
+            var parquetPath = parquetPathFile.Replace("'", "''");
+            var qry = $"CREATE OR REPLACE TABLE {tableName} AS SELECT * FROM '{parquetPath}';";
             var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
 

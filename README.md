@@ -159,6 +159,7 @@ The deploy command performs the following actions automatically:
 | `MEMORY_DB.DUCKDB.DATABASES(databaseId)` | Spills the attached DuckDB database names. |
 | `MEMORY_DB.DUCKDB.TABLES(databaseId, dependency)` | Spills the tables for an attached DuckDB database. |
 | `MEMORY_DB.DUCKDB.CREATE.TABLE(databaseId, table, range, dependency)` | Creates or replaces a DuckDB table from an Excel range whose first row contains headers. |
+| `MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE(databaseId, table, parquetPath, dependency)` | Creates or replaces a DuckDB table from a parquet file path. |
 | `MEMORY_DB.DUCKDB.INSERT(databaseId, table, range, dependency)` | Inserts Excel range rows into a DuckDB table. |
 | `MEMORY_DB.DUCKDB.EXECUTE(databaseId, sql, dependency)` | Executes a non-query DuckDB statement. |
 | `MEMORY_DB.DUCKDB.SCALAR(databaseId, sql, dependency)` | Executes a scalar DuckDB query. |
@@ -173,6 +174,7 @@ Example workbook formulas:
 =MEMORY_DB.SQLITE.CREATE_DB("demo", "")
 =MEMORY_DB.SQLITE.CREATE.TABLE("demo", "People", A1:B3, NOW())
 =MEMORY_DB.SQLITE.QUERY("demo", "SELECT * FROM People", TRUE, NOW())
+=MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE("analytics", "Trips", "C:\\data\\trips.parquet", NOW())
 ```
 
 Load `Artifacts/addin/XLS-Memory-Lib.xll` from Excel via **File > Options > Add-ins > Manage Excel Add-ins > Browse**.
