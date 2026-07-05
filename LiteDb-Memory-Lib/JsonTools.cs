@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace LiteDb_Memory_Lib;
@@ -44,6 +45,7 @@ public static class JsonTools
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
         {
+            Debug.WriteLine(ex);
             result = default;
             return false;
         }

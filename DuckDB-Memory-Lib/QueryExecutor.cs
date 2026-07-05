@@ -1,4 +1,5 @@
-﻿using DuckDB.NET.Data;
+﻿using System.Diagnostics;
+using DuckDB.NET.Data;
 using System.IO;
 
 namespace DuckDb_Memory_Lib;
@@ -42,8 +43,9 @@ public static class QueryExecutor
             
             return EnumsDuckMemory.Output.SUCCESS;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             return EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY;
         }
 
@@ -74,8 +76,9 @@ public static class QueryExecutor
 
             return EnumsDuckMemory.Output.SUCCESS;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             return EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY;
         }
     }
@@ -104,8 +107,9 @@ public static class QueryExecutor
             qryResult.Close();
             return (EnumsDuckMemory.Output.SUCCESS, resultList);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             return (EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY, []);
         }
     }
@@ -123,7 +127,8 @@ public static class QueryExecutor
         }
         catch (Exception ex)
         {
-           throw new Exception( $"{ex.Message}-{EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY}");
+            Debug.WriteLine(ex);
+            throw new Exception($"{ex.Message}-{EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY}", ex);
         }
     }
 }

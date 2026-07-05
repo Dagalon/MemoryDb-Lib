@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -77,8 +78,9 @@ public static partial class SqLiteLiteTools
             }
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -179,8 +181,9 @@ public static partial class SqLiteLiteTools
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch(Exception)
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.ERROR_TO_DETACH_DATABASE;
         }
     }
@@ -245,8 +248,9 @@ public static partial class SqLiteLiteTools
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -268,8 +272,9 @@ public static partial class SqLiteLiteTools
             QueryExecutor.Insert(db, idDataBase, idTable, fields, values, extraEnd);
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -341,15 +346,17 @@ public static partial class SqLiteLiteTools
                 using var cmd = new SqliteCommand(attachedQry, db);
                 cmd.ExecuteNonQuery();
             }
-            catch (SqliteException)
+            catch (SqliteException ex)
             {
+                CaptureException(ex);
                 return EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE;
             }
 
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -365,8 +372,9 @@ public static partial class SqLiteLiteTools
             cmd.ExecuteNonQuery();
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -437,8 +445,9 @@ public static partial class SqLiteLiteTools
             tables.Add(NoTablesMessage(idDataBase));
             return (EnumsSqliteMemory.Output.SUCCESS, tables);
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsSqliteMemory.Output.DB_NOT_FOUND, null);
         }
     }
@@ -478,8 +487,9 @@ public static partial class SqLiteLiteTools
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -511,8 +521,9 @@ public static partial class SqLiteLiteTools
             var result = parameters.Keys.Aggregate(qry, (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
             return (EnumsSqliteMemory.Output.SUCCESS, result);
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
         }
     }
@@ -546,8 +557,9 @@ public static partial class SqLiteLiteTools
             
             return (EnumsSqliteMemory.Output.SUCCESS, result);
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
         }
     }
@@ -576,8 +588,9 @@ public static partial class SqLiteLiteTools
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -609,8 +622,9 @@ public static partial class SqLiteLiteTools
                 reader.Close();
                 fs.Close();
             }
-            catch
+            catch (Exception ex)
             {
+                CaptureException(ex);
                 return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
             }
         }
@@ -655,8 +669,9 @@ public static partial class SqLiteLiteTools
             cmd.ExecuteNonQuery();
             return (EnumsSqliteMemory.Output.SUCCESS, string.Empty);
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsSqliteMemory.Output.DB_NOT_FOUND, ErrorDroppingTableMessage(idDataBase, idTable));
         }
     }
@@ -678,8 +693,9 @@ public static partial class SqLiteLiteTools
             cmd.ExecuteNonQuery();
             return EnumsSqliteMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsSqliteMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -691,6 +707,11 @@ public static partial class SqLiteLiteTools
     private static string TableNotFoundMessage(string idDataBase, string idTable) => $"Database '{idDataBase}' does not contain table '{idTable}'.";
 
     private static string ErrorDroppingTableMessage(string idDataBase, string idTable) => $"Error dropping table '{idTable}' from database '{idDataBase}'.";
+
+    private static void CaptureException(Exception exception)
+    {
+        Debug.WriteLine(exception);
+    }
 
     [GeneratedRegex(@"@[A-za-z0-9]+")]
     private static partial Regex MyRegex();

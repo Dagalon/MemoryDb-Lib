@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 
@@ -69,8 +70,9 @@ namespace SqliteDB_Memory_Lib
 
                     transaction.Commit();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine(ex);
                     transaction.Rollback();
                     throw;
                 }

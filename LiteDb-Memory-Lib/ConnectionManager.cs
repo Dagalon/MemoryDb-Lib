@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LiteDB;
 using System.Threading;
 
@@ -286,8 +287,9 @@ public sealed class ConnectionManager
             _memoryFiles[alias] = memoryStream;
             return database;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             memoryStream.Dispose();
             throw;
         }

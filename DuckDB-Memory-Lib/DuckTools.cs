@@ -1,4 +1,5 @@
-﻿using DuckDB.NET.Data;
+﻿using System.Diagnostics;
+using DuckDB.NET.Data;
 using DuckDB.NET.Data.DataChunk.Reader;
 using DuckDB.NET.Data.DataChunk.Writer;
 
@@ -184,15 +185,17 @@ public static class DuckTools
                 var cmd = new DuckDBCommand(attachedQry, db);
                 cmd.ExecuteNonQuery();
             }
-            catch (DuckDBException)
+            catch (DuckDBException ex)
             {
+                CaptureException(ex);
                 return EnumsDuckMemory.Output.ERROR_TO_ATTACHED_DATABASE;
             }
 
             return EnumsDuckMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsDuckMemory.Output.DB_NOT_FOUND;
         }
     }
@@ -229,8 +232,9 @@ public static class DuckTools
 
             return (EnumsDuckMemory.Output.SUCCESS, tables);
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsDuckMemory.Output.DB_NOT_FOUND, null);
         }
     }
@@ -262,8 +266,9 @@ public static class DuckTools
             cmd.ExecuteNonQuery();
             return (EnumsDuckMemory.Output.SUCCESS, "");
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return (EnumsDuckMemory.Output.DB_NOT_FOUND, "Error dropping table");
         }
     }
@@ -285,9 +290,15 @@ public static class DuckTools
             cmd.ExecuteNonQuery();
             return EnumsDuckMemory.Output.SUCCESS;
         }
-        catch
+        catch (Exception ex)
         {
+            CaptureException(ex);
             return EnumsDuckMemory.Output.DB_NOT_FOUND;
         }
+    }
+
+    private static void CaptureException(Exception exception)
+    {
+        Debug.WriteLine(exception);
     }
 }
