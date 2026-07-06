@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using DuckDB.NET.Data;
 using System.IO;
 
@@ -30,15 +30,16 @@ public static class QueryExecutor
             for (var i = 0; i < noFields; i++)
             {
                 var t = NetTypeToDuckDbType.GetDuckDbType(types[i]);
-                fieldsDefinition.Add(headers[i] + " " + t);
+                fieldsDefinition.Add(DuckTools.QuoteIdentifier(headers[i]) + " " + t);
             }
                
         }
 
         try
         {
-            var qry = $"CREATE TABLE IF NOT EXISTS {idDataBase}.{idTable}({string.Join(",", fieldsDefinition)})";
-            var cmd = new DuckDBCommand(qry, db);
+            var tableName = $"{DuckTools.QuoteIdentifier(idDataBase)}.{DuckTools.QuoteIdentifier(idTable)}";
+            var qry = $"CREATE TABLE IF NOT EXISTS {tableName}({string.Join(",", fieldsDefinition)})";
+            using var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
             
             return EnumsDuckMemory.Output.SUCCESS;
@@ -71,7 +72,7 @@ public static class QueryExecutor
             var tableName = $"{DuckTools.QuoteIdentifier(idDataBase)}.{DuckTools.QuoteIdentifier(idTable)}";
             var parquetPath = parquetPathFile.Replace("'", "''");
             var qry = $"CREATE OR REPLACE TABLE {tableName} AS SELECT * FROM '{parquetPath}';";
-            var cmd = new DuckDBCommand(qry, db);
+            using var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
 
             return EnumsDuckMemory.Output.SUCCESS;
@@ -90,8 +91,8 @@ public static class QueryExecutor
     {
         try
         {
-            var cmd = new DuckDBCommand(qry, db);
-            var qryResult = cmd.ExecuteReader();
+            using var cmd = new DuckDBCommand(qry, db);
+            using var qryResult = cmd.ExecuteReader();
 
             var resultList = new List<Dictionary<string, object>>();
 
@@ -104,7 +105,6 @@ public static class QueryExecutor
                 }
             }
 
-            qryResult.Close();
             return (EnumsDuckMemory.Output.SUCCESS, resultList);
         }
         catch (Exception ex)
@@ -121,14 +121,33 @@ public static class QueryExecutor
     {
         try
         {
-            qry = parameters.Keys.Aggregate(qry,
-                (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
-            return ExecuteQryReader(db, qry);
+            using var cmd = new DuckDBCommand(qry, db);
+            foreach (var parameter in parameters)
+            {
+                var dbParameter = cmd.CreateParameter();
+                dbParameter.ParameterName = parameter.Key;
+                dbParameter.Value = parameter.Value;
+                cmd.Parameters.Add(dbParameter);
+            }
+
+            using var qryResult = cmd.ExecuteReader();
+            var resultList = new List<Dictionary<string, object>>();
+
+            if (qryResult.HasRows)
+            {
+                while (qryResult.Read())
+                {
+                    resultList.Add(Enumerable.Range(0, qryResult.FieldCount)
+                        .ToDictionary(qryResult.GetName, qryResult.GetValue));
+                }
+            }
+
+            return (EnumsDuckMemory.Output.SUCCESS, resultList);
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
-            throw new Exception($"{ex.Message}-{EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY}", ex);
+            return (EnumsDuckMemory.Output.ERROR_TO_EXECUTE_QUERY, []);
         }
     }
 }

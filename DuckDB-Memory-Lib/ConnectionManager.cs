@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using DuckDB.NET.Data;
 
 
@@ -23,7 +23,7 @@ public sealed class ConnectionManager
     }
 
     /// <summary>
-    /// Retrieves an open SQLite connection identified by the provided alias, creating it when necessary.
+    /// Retrieves an open DuckDB connection identified by the provided alias, creating it when necessary.
     /// </summary>
     public DuckDBConnection GetConnection(string? alias = null, string? path = null)
     {
@@ -72,7 +72,7 @@ public sealed class ConnectionManager
     }
 
     /// <summary>
-    /// Closes and disposes all active SQLite connections managed by this instance.
+    /// Closes and disposes all active DuckDB connections managed by this instance.
     /// </summary>
     public void CloseAllConnections()
     {
@@ -95,7 +95,7 @@ public sealed class ConnectionManager
     }
 
     /// <summary>
-    /// Opens the provided SQLite connection when it is not already open.
+    /// Opens the provided DuckDB connection when it is not already open.
     /// </summary>
     private static void EnsureOpen(DuckDBConnection connection)
     {
@@ -182,11 +182,13 @@ public sealed class ConnectionManager
         /// </summary>
         public static void DeleteRegister(string idDataBase)
         {
-            var keepIdDataBases = _mapIdDataBase.Values.ToList();
-            int indexValues = keepIdDataBases.IndexOf(idDataBase);
-            string pathIdDataBase = _mapIdDataBase.Keys.ToList()[indexValues];
+            var pathIdDataBase = _mapIdDataBase
+                .FirstOrDefault(entry => string.Equals(entry.Value, idDataBase, StringComparison.OrdinalIgnoreCase))
+                .Key;
 
-            _mapIdDataBase.Remove(pathIdDataBase);
-
+            if (pathIdDataBase is not null)
+            {
+                _mapIdDataBase.Remove(pathIdDataBase);
+            }
         }
 }

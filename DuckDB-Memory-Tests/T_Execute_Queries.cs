@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using DuckDb_Memory_Lib;
 
 namespace DuckDB_Memory_Tests;
@@ -41,4 +41,20 @@ public class ExecuteQueries
         Assert.That(resultQry.Item1, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
 
     }
+    [Test]
+    public void T_ExecuteQryReader_Uses_DuckDb_Parameters()
+    {
+        var conn = ConnectionManager.GetInstance().GetConnection($"PARAM_DB_{Guid.NewGuid():N}");
+        var result = QueryExecutor.ExecuteQryReader(
+            conn,
+            "SELECT @value AS VALUE",
+            new Dictionary<string, string> { ["@value"] = "O'Reilly" });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Item1, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+            Assert.That(result.Item2.Single()["VALUE"], Is.EqualTo("O'Reilly"));
+        });
+    }
+
 }
