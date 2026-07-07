@@ -124,10 +124,9 @@ public static class QueryExecutor
             using var cmd = new DuckDBCommand(qry, db);
             foreach (var parameter in parameters)
             {
-                var dbParameter = cmd.CreateParameter();
-                dbParameter.ParameterName = NormalizeParameterName(parameter.Key);
-                dbParameter.Value = parameter.Value;
-                cmd.Parameters.Add(dbParameter);
+                cmd.Parameters.Add(new DuckDBParameter(
+                    NormalizeParameterName(parameter.Key),
+                    parameter.Value));
             }
 
             using var qryResult = cmd.ExecuteReader();
