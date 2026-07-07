@@ -47,7 +47,7 @@ public class ExecuteQueries
         var conn = ConnectionManager.GetInstance().GetConnection($"PARAM_DB_{Guid.NewGuid():N}");
         var result = QueryExecutor.ExecuteQryReader(
             conn,
-            "SELECT $value AS VALUE",
+            "SELECT ? AS VALUE",
             new Dictionary<string, string> { ["value"] = "O'Reilly" });
 
         Assert.Multiple(() =>
