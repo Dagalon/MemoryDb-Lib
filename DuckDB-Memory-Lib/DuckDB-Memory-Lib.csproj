@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>DuckDb_Memory_Lib</RootNamespace>
@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
+      <PackageReference Update="DuckDB.NET.Data.Full" Version="1.4.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\Shared\ConnectionManagerBase.cs" Link="Shared\ConnectionManagerBase.cs" />
     </ItemGroup>
 
 </Project>

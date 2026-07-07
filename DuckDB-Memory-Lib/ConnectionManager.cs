@@ -1,16 +1,13 @@
-﻿using System.Data;
 using DuckDB.NET.Data;
+using MemoryDb_Lib.Shared;
 
 
 namespace DuckDb_Memory_Lib;
 
-public sealed class ConnectionManager
+public sealed class ConnectionManager : ConnectionManagerBase<DuckDBConnection>
 {
     private static readonly Lazy<ConnectionManager> LazyInstance =
         new(() => new ConnectionManager(), LazyThreadSafetyMode.ExecutionAndPublication);
-
-    private readonly object _syncRoot = new();
-    private readonly Dictionary<string, DuckDBConnection> _connections = new(StringComparer.OrdinalIgnoreCase);
 
     private ConnectionManager() { }
 
@@ -23,98 +20,15 @@ public sealed class ConnectionManager
     }
 
     /// <summary>
-    /// Retrieves an open SQLite connection identified by the provided alias, creating it when necessary.
+    /// Retrieves an open DuckDB connection identified by the provided alias, creating it when necessary.
     /// </summary>
     public DuckDBConnection GetConnection(string? alias = null, string? path = null)
     {
-        var normalizedAlias = NormalizeAlias(alias);
-
-        lock (_syncRoot)
-        {
-            if (_connections.TryGetValue(normalizedAlias, out var existingConnection))
-            {
-                EnsureOpen(existingConnection);
-                return existingConnection;
-            }
-
-            var newConnection = DuckTools.GetInstance(path);
-            EnsureOpen(newConnection);
-            _connections[normalizedAlias] = newConnection;
-
-            return newConnection;
-        }
+        return GetConnectionCore(alias, path, DuckTools.GetInstance);
     }
 
     /// <summary>
-    /// Closes and disposes the connection associated with the provided alias.
-    /// </summary>
-    public void CloseConnection(string? alias = null)
-    {
-        var normalizedAlias = NormalizeAlias(alias);
-
-        lock (_syncRoot)
-        {
-            if (!_connections.TryGetValue(normalizedAlias, out var connection))
-            {
-                return;
-            }
-
-            try
-            {
-                connection.Close();
-            }
-            finally
-            {
-                connection.Dispose();
-                _connections.Remove(normalizedAlias);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Closes and disposes all active SQLite connections managed by this instance.
-    /// </summary>
-    public void CloseAllConnections()
-    {
-        lock (_syncRoot)
-        {
-            foreach (var connection in _connections.Values)
-            {
-                try
-                {
-                    connection.Close();
-                }
-                finally
-                {
-                    connection.Dispose();
-                }
-            }
-
-            _connections.Clear();
-        }
-    }
-
-    /// <summary>
-    /// Opens the provided SQLite connection when it is not already open.
-    /// </summary>
-    private static void EnsureOpen(DuckDBConnection connection)
-    {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-    }
-
-    /// <summary>
-    /// Normalizes aliases to ensure consistent lookups inside the connection dictionary.
-    /// </summary>
-    private static string NormalizeAlias(string? alias)
-    {
-        return string.IsNullOrWhiteSpace(alias) ? "default" : alias.Trim();
-    }
-
-    /// <summary>
-    /// Static helper that delegates to <see cref="CloseConnection(string?)"/>.
+    /// Static helper that delegates to <see cref="ConnectionManagerBase{TConnection}.CloseConnection(string?)"/>.
     /// </summary>
     public static void Close(string? alias = null)
     {
@@ -128,7 +42,7 @@ public sealed class ConnectionManager
     {
         GetInstance().CloseAllConnections();
     }
-    }
+}
 
     public sealed class KeeperRegisterIdDataBase
     {
@@ -182,11 +96,13 @@ public sealed class ConnectionManager
         /// </summary>
         public static void DeleteRegister(string idDataBase)
         {
-            var keepIdDataBases = _mapIdDataBase.Values.ToList();
-            int indexValues = keepIdDataBases.IndexOf(idDataBase);
-            string pathIdDataBase = _mapIdDataBase.Keys.ToList()[indexValues];
+            var pathIdDataBase = _mapIdDataBase
+                .FirstOrDefault(entry => string.Equals(entry.Value, idDataBase, StringComparison.OrdinalIgnoreCase))
+                .Key;
 
-            _mapIdDataBase.Remove(pathIdDataBase);
-
+            if (pathIdDataBase is not null)
+            {
+                _mapIdDataBase.Remove(pathIdDataBase);
+            }
         }
 }

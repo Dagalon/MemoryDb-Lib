@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using DuckDB.NET.Data;
 using DuckDB.NET.Data.DataChunk.Reader;
 using DuckDB.NET.Data.DataChunk.Writer;
@@ -177,7 +177,7 @@ public static class DuckTools
             }
             else
             {
-                attachedQry = $"ATTACH '{strConnection}' AS \"{aliasDataBase}\" ";
+                attachedQry = $"ATTACH '{strConnection}' AS {QuoteIdentifier(aliasDataBase)}";
             }
 
             try

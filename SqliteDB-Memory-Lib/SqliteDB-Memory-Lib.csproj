@@ -9,4 +9,8 @@
     <ItemGroup>
       <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Include="..\Shared\ConnectionManagerBase.cs" Link="Shared\ConnectionManagerBase.cs" />
+    </ItemGroup>
+
 </Project>

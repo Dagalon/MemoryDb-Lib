@@ -1,4 +1,4 @@
-﻿using DuckDb_Memory_Lib;
+using DuckDb_Memory_Lib;
 
 namespace DuckDB_Memory_Tests;
 
@@ -86,6 +86,30 @@ public class DuckToolsTests
             Assert.That(missingDropOutput.Item1, Is.EqualTo(EnumsDuckMemory.Output.TABLE_NOT_FOUND));
             Assert.That(missingDropOutput.Item2, Does.Contain(tableId));
         });
+    }
+
+
+    [Test]
+    public void T_DeleteRegister_Ignores_Missing_Id()
+    {
+        Assert.DoesNotThrow(() => KeeperRegisterIdDataBase.DeleteRegister($"MISSING_{Guid.NewGuid():N}"));
+    }
+
+    [Test]
+    public void T_CreateTable_Quotes_Database_And_Table_Identifiers()
+    {
+        var databaseId = $"TOOLS DB {Guid.NewGuid():N}";
+        var tableId = $"TOOLS TABLE {Guid.NewGuid():N}";
+        var conn = ConnectionManager.GetInstance().GetConnection(databaseId);
+
+        var dbOutput = DuckTools.CreateDatabase(conn, databaseId, null);
+        Assert.That(dbOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+
+        var createOutput = QueryExecutor.CreateTable(conn, databaseId, tableId, ["id INTEGER"]);
+        Assert.That(createOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+
+        var listTables = DuckTools.GetListTables(conn, databaseId);
+        Assert.That(listTables.Item2, Does.Contain(tableId));
     }
 
     [Test]
