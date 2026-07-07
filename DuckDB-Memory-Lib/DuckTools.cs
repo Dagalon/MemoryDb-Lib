@@ -128,8 +128,7 @@ public static class DuckTools
     {
         db.RegisterScalarFunction<TInput, TOutput>(
             idFunction,
-            func,
-            isPureFunction: true);
+            func);
 
         return EnumsDuckMemory.Output.SUCCESS;
     }

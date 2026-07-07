@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using DuckDB.NET.Data;
 using System.IO;
+using DuckDB.NET.Native;
 
 namespace DuckDb_Memory_Lib;
 
@@ -127,9 +128,10 @@ public static class QueryExecutor
                 var dbParameter = cmd.CreateParameter();
                 dbParameter.ParameterName = parameter.Key;
                 dbParameter.Value = parameter.Value;
+                dbParameter.DbType = NetTypeToDuckDbType.GetDbType(parameter.Value.GetType());
                 cmd.Parameters.Add(dbParameter);
             }
-
+            
             using var qryResult = cmd.ExecuteReader();
             var resultList = new List<Dictionary<string, object>>();
 

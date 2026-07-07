@@ -1,4 +1,5 @@
-﻿using DuckDB.NET.Native;
+﻿using System.Data;
+using DuckDB.NET.Native;
 
 namespace DuckDb_Memory_Lib;
 
@@ -76,4 +77,61 @@ public static class NetTypeToDuckDbType
         // Fallback → VARCHAR
         return (value, typeof(string));
     }
+    
+    /// <summary>
+    /// Maps a .NET type to the closest ADO.NET DbType.
+    /// The resulting DbType can be used by DuckDB.NET to infer the native DuckDB type.
+    /// </summary>
+    public static DbType GetDbType(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (type == typeof(bool))
+            return DbType.Boolean;
+
+        if (type == typeof(byte))
+            return DbType.Byte;
+
+        if (type == typeof(short))
+            return DbType.Int16;
+
+        if (type == typeof(int))
+            return DbType.Int32;
+
+        if (type == typeof(long))
+            return DbType.Int64;
+
+        if (type == typeof(float))
+            return DbType.Single;
+
+        if (type == typeof(double))
+            return DbType.Double;
+
+        if (type == typeof(decimal))
+            return DbType.Decimal;
+
+        if (type == typeof(DateOnly))
+            return DbType.Date;
+
+        if (type == typeof(TimeOnly))
+            return DbType.Time;
+
+        if (type == typeof(DateTime))
+            return DbType.DateTime;
+
+        if (type == typeof(Guid))
+            return DbType.Guid;
+
+        if (type == typeof(byte[]))
+            return DbType.Binary;
+
+        if (type == typeof(string))
+            return DbType.String;
+
+        throw new NotSupportedException(
+            $"The .NET type '{type.FullName}' cannot be mapped to a DbType.");
+    }
 }
+
+
+
