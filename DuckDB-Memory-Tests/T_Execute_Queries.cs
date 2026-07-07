@@ -44,11 +44,13 @@ public class ExecuteQueries
     [Test]
     public void T_ExecuteQryReader_Uses_DuckDb_Parameters()
     {
-        var conn = ConnectionManager.GetInstance().GetConnection($"PARAM_DB_{Guid.NewGuid():N}");
+        var manager = ConnectionManager.GetInstance();
+        var conn = manager.GetConnection();
+        
         var result = QueryExecutor.ExecuteQryReader(
             conn,
-            "SELECT ? AS VALUE",
-            new Dictionary<string, string> { ["value"] = "O'Reilly" });
+            "SELECT $param AS VALUE",
+            new Dictionary<string, string> { ["param"] = "O'Reilly" });
 
         Assert.Multiple(() =>
         {
