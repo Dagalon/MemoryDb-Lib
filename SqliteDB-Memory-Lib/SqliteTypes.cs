@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Globalization;
 
 namespace SqliteDB_Memory_Lib
 {
@@ -32,19 +33,19 @@ namespace SqliteDB_Memory_Lib
             if (string.IsNullOrEmpty(value))
                 return (null, typeof(string))!;
 
-            if (int.TryParse(value, out int intValue))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out int intValue))
                 return (intValue, typeof(int));
 
-            if (long.TryParse(value, out long longValue))
+            if (long.TryParse(value, CultureInfo.InvariantCulture, out long longValue))
                 return (longValue, typeof(long));
 
-            if (double.TryParse(value, out double doubleValue))
+            if (double.TryParse(value, CultureInfo.InvariantCulture, out double doubleValue))
                 return (doubleValue, typeof(double));
 
             if (bool.TryParse(value, out bool boolValue))
                 return (boolValue, typeof(bool));
 
-            if (DateTime.TryParse(value, out DateTime dateValue))
+            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, out DateTime dateValue))
                 return (dateValue, typeof(DateTime));
 
             return (value, typeof(string));

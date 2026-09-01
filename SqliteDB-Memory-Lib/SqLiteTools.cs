@@ -134,7 +134,7 @@ public static partial class SqLiteLiteTools
             var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
-                Delimiter = ";"
+                Delimiter = ";",
             };
             
             var csv = new CsvReader(reader, config);

@@ -1,5 +1,4 @@
 using ExcelDna.Integration;
-using SqliteDB_Memory_Lib;
 
 namespace XLS_Memory_Lib;
 
@@ -73,7 +72,6 @@ public static class MemoryDbSqliteExcelFunctions
     {
         try
         {
-
             if (string.IsNullOrEmpty(path)) 
             {
                 var output_range = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: false);
@@ -81,7 +79,7 @@ public static class MemoryDbSqliteExcelFunctions
             }
 
             var connection = Manager.GetConnection(databaseId);
-            var output_file = SqLiteLiteTools.CreateTable(connection, databaseId, table, path).ToString();
+            var output_file = SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table, path).ToString();
             return ExcelOutput.FromOperationString(output_file);
 
             
@@ -117,12 +115,12 @@ public static class MemoryDbSqliteExcelFunctions
         Name = "MEMORY_DB.SQLITE.QUERY",
         Description = "Executes a SQLite query or a SQL file and spills the result as a two-dimensional array.",
         Category = Category)]
-    public static object[,] Query(string databaseId,  string sql,  bool includeHeaders, object dependency)
+    public static object[,] Query(string databaseId,  string sql,  bool includeHeaders, object[,] parameters, object dependency)
     {
         try
         {
             var sqlText = SqliteDB_Memory_Lib.SqLiteLiteTools.ResolveSql(sql);
-            return Relational.RelationalQuery(databaseId, sqlText, includeHeaders, isDuckDb: false);
+            return Relational.RelationalQuery(databaseId, sqlText, includeHeaders,  isDuckDb: false, parameters: parameters);
         }
         catch (Exception ex)
         {
