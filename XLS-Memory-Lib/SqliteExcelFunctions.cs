@@ -1,4 +1,5 @@
 using ExcelDna.Integration;
+using SqliteDB_Memory_Lib;
 
 namespace XLS_Memory_Lib;
 
@@ -68,12 +69,22 @@ public static class MemoryDbSqliteExcelFunctions
     }
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE.TABLE", Description = "Creates a SQLite table from an Excel range. First row must contain headers.", Category = Category)]
-    public static string CreateTable(string databaseId, string table, object[,] range, object dependency)
+    public static string CreateTable(string databaseId, string table, object[,] range, string path, object dependency)
     {
         try
         {
-            var output = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: false);
-            return ExcelOutput.FromOperationString(output);
+
+            if (string.IsNullOrEmpty(path)) 
+            {
+                var output_range = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: false);
+                return ExcelOutput.FromOperationString(output_range);
+            }
+
+            var connection = Manager.GetConnection(databaseId);
+            var output_file = SqLiteLiteTools.CreateTable(connection, databaseId, table, path).ToString();
+            return ExcelOutput.FromOperationString(output_file);
+
+            
         }
         catch (Exception ex)
         {
@@ -97,7 +108,7 @@ public static class MemoryDbSqliteExcelFunctions
     }
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.EXECUTE", Description = "Executes a non-query SQL statement against a named SQLite connection.", Category = Category)]
-    public static string Execute(string databaseId, string sql, object dependency) => Relational.RelationalExecute(databaseId, sql, isDuckDb: false);
+    public static string Execute(string databaseId, string sql, object dependency) =>Relational.RelationalExecute(databaseId, sql, isDuckDb: false);
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.SCALAR", Description = "Executes a scalar SQL query against a named SQLite connection.", Category = Category)]
     public static object Scalar(string databaseId, string sql, object dependency) => Relational.RelationalScalar(databaseId, sql, isDuckDb: false);

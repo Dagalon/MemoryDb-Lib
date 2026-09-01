@@ -177,7 +177,7 @@ public static partial class SqLiteLiteTools
             }
 
             DropTable(db, idDataBase, idTable);
-            CreateTable(db, idDataBase, idTable, fields.Select((field, i)=>field.ToDbString("[","]")).ToList(), arrayValues);
+            CreateTable(db, idDataBase, idTable, [.. fields], arrayValues);
             
             return EnumsSqliteMemory.Output.SUCCESS;
         }
