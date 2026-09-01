@@ -17,6 +17,7 @@
         <PackageReference Include="NUnit" Version="4.2.2" />
         <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+        <PackageReference Include="ExcelDna.Integration" Version="1.10.0-preview4" />
         <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
     </ItemGroup>
 
@@ -26,6 +27,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SqliteDB-Memory-Lib\SqliteDB-Memory-Lib.csproj" />
+      <ProjectReference Include="..\XLS-Memory-Lib\XLS-Memory-Lib.csproj" />
     </ItemGroup>
 
     <ItemGroup>

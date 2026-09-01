@@ -64,28 +64,38 @@ internal static object[,] RelationalQuery(string alias, string sql, bool include
 
     try
     {
-        var p = new Dictionary<string, string>();
-
-        if (parameters != null && parameters.GetLength(0) > 0 && parameters.GetLength(1) > 0)
-        {
-            for (var row = 0; row < parameters.GetLength(0); row++)
-            {
-                var key = parameters[row, 0]?.ToString();
-                var value = parameters[row, 1]?.ToString();
-                if (!string.IsNullOrWhiteSpace(key))
-                {
-                    p[key] = value ?? string.Empty;
-                }
-            }
-        }
-
         using var command = CreateCommand(alias, sql, isDuckDb);
+        AddParameters(command, parameters, isDuckDb);
         using var reader = command.ExecuteReader();
         return Tables.ReaderToArray(reader, includeHeaders);
     }
     catch (Exception ex)
     {
         return Tables.ErrorTable(ex.Message);
+    }
+}
+
+internal static void AddParameters(DbCommand command, object[,]? parameters, bool isDuckDb)
+{
+    if (parameters is null || parameters.GetLength(0) == 0) return;
+    if (parameters.GetLength(1) < 2)
+        throw new ArgumentException("parameters must contain two columns: name and value");
+
+    for (var row = 0; row < parameters.GetLength(0); row++)
+    {
+        var rawName = Convert.ToString(parameters[row, 0], CultureInfo.InvariantCulture)?.Trim();
+        if (string.IsNullOrWhiteSpace(rawName)) continue;
+
+        var name = rawName.TrimStart('@', '$', ':');
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException($"parameter name at row {row + 1} is invalid");
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = isDuckDb
+            ? name
+            : rawName[0] is '@' or '$' or ':' ? rawName : $"${name}";
+        parameter.Value = Tables.NormalizeInput(parameters[row, 1]);
+        command.Parameters.Add(parameter);
     }
 }
 

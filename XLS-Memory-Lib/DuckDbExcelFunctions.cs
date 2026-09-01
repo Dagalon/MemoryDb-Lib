@@ -122,12 +122,12 @@ public static class MemoryDbDuckDbExcelFunctions
     public static object Scalar(string databaseId, string sql, object dependency) => Relational.RelationalScalar(databaseId, sql, isDuckDb: true);
 
     [ExcelFunction(Name = "MEMORY_DB.DUCKDB.QUERY", Description = "Executes a DuckDB query or a SQL file and spills the result as a two-dimensional array.", Category = Category)]
-    public static object[,] Query(string databaseId, string sql, bool includeHeaders, object dependency)
+    public static object[,] Query(string databaseId, string sql, bool includeHeaders, object[,] parameters, object dependency)
     {
         try
         {
             var sqlText = DuckDb_Memory_Lib.DuckTools.ResolveSql(sql);
-            return Relational.RelationalQuery(databaseId, sqlText, includeHeaders, isDuckDb: true);
+            return Relational.RelationalQuery(databaseId, sqlText, includeHeaders, isDuckDb: true, parameters: parameters);
         }
         catch (Exception ex)
         {

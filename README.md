@@ -146,7 +146,7 @@ Excel worksheet commands use a consistent text status contract: successful opera
 | `MEMORY_DB.SQLITE.INSERT(databaseId, table, range, dependency)` | Inserts Excel range rows into a SQLite table. |
 | `MEMORY_DB.SQLITE.EXECUTE(databaseId, sql, dependency)` | Executes a non-query SQLite statement. |
 | `MEMORY_DB.SQLITE.SCALAR(databaseId, sql, dependency)` | Executes a scalar SQLite query. |
-| `MEMORY_DB.SQLITE.QUERY(databaseId, sql, includeHeaders, dependency)` | Executes a SQLite query and spills a two-dimensional result. |
+| `MEMORY_DB.SQLITE.QUERY(databaseId, sql, includeHeaders, parameters, dependency)` | Executes a parameterized SQLite query and spills a two-dimensional result. `parameters` is a two-column name/value range. |
 | `MEMORY_DB.SQLITE.DROP.TABLE(databaseId, table)` | Drops a SQLite table. |
 | `MEMORY_DB.SQLITE.SAVE(databaseId, path)` | Saves an attached SQLite database to a file. |
 | `MEMORY_DB.SQLITE.CLOSE(databaseId)` | Closes a named SQLite connection. |
@@ -165,7 +165,7 @@ Excel worksheet commands use a consistent text status contract: successful opera
 | `MEMORY_DB.DUCKDB.INSERT(databaseId, table, range, dependency)` | Inserts Excel range rows into a DuckDB table. |
 | `MEMORY_DB.DUCKDB.EXECUTE(databaseId, sql, dependency)` | Executes a non-query DuckDB statement. |
 | `MEMORY_DB.DUCKDB.SCALAR(databaseId, sql, dependency)` | Executes a scalar DuckDB query. |
-| `MEMORY_DB.DUCKDB.QUERY(databaseId, sql, includeHeaders, dependency)` | Executes a DuckDB query and spills a two-dimensional result. |
+| `MEMORY_DB.DUCKDB.QUERY(databaseId, sql, includeHeaders, parameters, dependency)` | Executes a parameterized DuckDB query and spills a two-dimensional result. `parameters` is a two-column name/value range. |
 | `MEMORY_DB.DUCKDB.DROP.TABLE(databaseId, table)` | Drops a DuckDB table. |
 | `MEMORY_DB.DUCKDB.CLOSE(databaseId)` | Closes a named DuckDB connection. |
 | `MEMORY_DB.DUCKDB.CLOSE.ALL()` | Closes all DuckDB connections. |
@@ -175,7 +175,7 @@ Example workbook formulas:
 ```excel
 =MEMORY_DB.SQLITE.CREATE_DB("demo", "")
 =MEMORY_DB.SQLITE.CREATE.TABLE("demo", "People", A1:B3, NOW())
-=MEMORY_DB.SQLITE.QUERY("demo", "SELECT * FROM People", TRUE, NOW())
+=MEMORY_DB.SQLITE.QUERY("demo", "SELECT * FROM People WHERE Age >= $minAge", TRUE, {"minAge",18}, NOW())
 =MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE("analytics", "Trips", "C:\\data\\trips.parquet", NOW())
 ```
 
