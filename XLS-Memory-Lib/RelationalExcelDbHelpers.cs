@@ -28,13 +28,14 @@ internal static class Relational
     }
 }
 
-internal static string RelationalExecute(string alias, string sql, bool isDuckDb)
+internal static string RelationalExecute(string alias, string sql, bool isDuckDb, object[,]? parameters = null)
 {
     if (string.IsNullOrWhiteSpace(sql)) return ExcelOutput.Error("sql is required");
 
     try
     {
-        _ = isDuckDb ? ExecuteDuck(alias, sql) : ExecuteSqlite(alias, sql);
+
+        _ = isDuckDb ? ExecuteDuck(alias, sql, parameters) : ExecuteSqlite(alias, sql, parameters);
         return ExcelOutput.Success;
     }
     catch (Exception ex)
@@ -65,7 +66,13 @@ internal static object[,] RelationalQuery(string alias, string sql, bool include
     try
     {
         using var command = CreateCommand(alias, sql, isDuckDb);
-        AddParameters(command, parameters, isDuckDb);
+
+        if (parameters is not null  &&  parameters[0, 0] is not ExcelMissing)
+        {
+            AddParameters(command, parameters, isDuckDb); 
+        }
+            
+        
         using var reader = command.ExecuteReader();
         return Tables.ReaderToArray(reader, includeHeaders);
     }
@@ -120,15 +127,28 @@ internal static void RelationalInsertRows(string table, List<string> headers, ob
         }
 }
 
-internal static int ExecuteSqlite(string alias, string sql)
+internal static int ExecuteSqlite(string alias, string sql, object[,]? parameters = null)
 {
     using var command = CreateCommand(alias, sql, isDuckDb: false);
+
+    if (parameters is not null && parameters[0, 0] is not ExcelMissing)
+    {
+        AddParameters(command, parameters, isDuckDb: false);
+    } 
+    
     return command.ExecuteNonQuery();
 }
 
-internal static int ExecuteDuck(string alias, string sql)
+internal static int ExecuteDuck(string alias, string sql, object[,]? parameters = null)
 {
     using var command = CreateCommand(alias, sql, isDuckDb: true);
+
+
+    if (parameters is not null && parameters[0, 0] is not ExcelMissing)
+    {
+        AddParameters(command, parameters, isDuckDb: true);
+    }
+
     return command.ExecuteNonQuery();
 }
 

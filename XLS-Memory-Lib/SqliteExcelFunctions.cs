@@ -105,8 +105,23 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.EXECUTE", Description = "Executes a non-query SQL statement against a named SQLite connection.", Category = Category)]
-    public static string Execute(string databaseId, string sql, object dependency) =>Relational.RelationalExecute(databaseId, sql, isDuckDb: false);
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.EXECUTE",
+        Description = "Executes a non-query SQL statement against a named SQLite connection.", Category = Category)]
+    public static string Execute(string databaseId, string sql, object[,]? parameters, object? dependency)
+    {
+
+        try
+        {
+            var sqlText = SqliteDB_Memory_Lib.SqLiteLiteTools.ResolveSql(sql); 
+            return Relational.RelationalExecute(databaseId, sqlText, isDuckDb: false, parameters: parameters);
+
+        }
+        catch (Exception ex)
+        {
+            return ExcelOutput.Error(ex);
+        }
+        
+    }
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.SCALAR", Description = "Executes a scalar SQL query against a named SQLite connection.", Category = Category)]
     public static object Scalar(string databaseId, string sql, object dependency) => Relational.RelationalScalar(databaseId, sql, isDuckDb: false);
@@ -115,7 +130,7 @@ public static class MemoryDbSqliteExcelFunctions
         Name = "MEMORY_DB.SQLITE.QUERY",
         Description = "Executes a SQLite query or a SQL file and spills the result as a two-dimensional array.",
         Category = Category)]
-    public static object[,] Query(string databaseId,  string sql,  bool includeHeaders, object[,] parameters, object dependency)
+    public static object[,] Query(string databaseId,  string sql,  bool includeHeaders, object[,]? parameters, object? dependency)
     {
         try
         {

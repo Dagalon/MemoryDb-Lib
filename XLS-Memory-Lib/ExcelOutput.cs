@@ -1,6 +1,6 @@
 namespace XLS_Memory_Lib;
 
-internal static class ExcelOutput
+public static class ExcelOutput
 {
     public const string Success = "SUCCESS";
     private const string ErrorPrefix = "ERROR: ";

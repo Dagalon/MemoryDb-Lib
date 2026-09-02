@@ -1,4 +1,5 @@
 ﻿using SqliteDB_Memory_Lib;
+using XLS_Memory_Lib;
 
 namespace SqliteDb_Memory_Tests;
 
@@ -17,33 +18,33 @@ public class ExecuteQueries
     public void T_Create_Table()
     {
         const string idDataBase = "TEST_DB";
-        
+
         var manager = ConnectionManager.GetInstance();
         var conn = manager.GetConnection();
 
         var idTable = "TABLE_PERSONAL_DATA";
-        
+
         //  create a database
         var checkDataBase = SqLiteLiteTools.CreateDatabase(conn, idDataBase, null);
         Assert.That(checkDataBase == EnumsSqliteMemory.Output.SUCCESS);
         var listDataBases = SqLiteLiteTools.GetListDataBase(conn);
-        
+
         // data of the table
         var headers = new List<string> { "ID", "NAME", "FIRST_NAME", "AGE", "JOB" };
-        var data = new object[,] { { 1, "Juan", "Garcia", 25, "Programmer" }, 
+        var data = new object[,] { { 1, "Juan", "Garcia", 25, "Programmer" },
             { 2, "Pedro", "Moreno", 45, "Engineering" },
             {3, "Maria", "Lopez", 32, "Electricity"}
         };
-        
+
         var checkTable = SqLiteLiteTools.CreateTable(conn, idDataBase, idTable, headers, data);
         Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
-        
+
         // execute query
         var qry = @"SELECT * FROM TABLE_PERSONAL_DATA";
         var results = SqLiteLiteTools.Select(conn, qry);
         Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
     }
-    
+
     /// <summary>
     /// Verifies bulk insertion of multiple rows into a predefined SQLite table.
     /// </summary>
@@ -51,17 +52,17 @@ public class ExecuteQueries
     public void T_Insert_Data()
     {
         const string idDataBase = "TEST_DB";
-        
+
         var manager = ConnectionManager.GetInstance();
         var conn = manager.GetConnection();
 
         var idTable = "TABLE_PERSONAL_DATA";
-        
+
         //  create a database
         var checkDataBase = SqLiteLiteTools.CreateDatabase(conn, idDataBase, null);
         Assert.That(checkDataBase == EnumsSqliteMemory.Output.SUCCESS);
-        
-         var data = new object[,] {
+
+        var data = new object[,] {
             { 1, "Juan", "Garcia", 25, "Programmer" },
             { 2, "Pedro", "Moreno", 45, "Engineer" },
             { 3, "Maria", "Lopez", 32, "Electrician" },
@@ -113,20 +114,69 @@ public class ExecuteQueries
             { 49, "Alberto", "Estevez", 40, "Manager" },
             { 50, "Julia", "Prieto", 26, "Consultant" }
         };
-        
-        
+
+
         // data of the table
         var headers = new List<string> { "ID", "NAME", "FIRST_NAME", "AGE", "JOB" };
         var checkTable = SqLiteLiteTools.CreateTable(conn, idDataBase, idTable, headers, null);
         Assert.That(checkTable == EnumsSqliteMemory.Output.SUCCESS);
-        
+
         var checkInsert = SqLiteLiteTools.Insert(conn, idDataBase, idTable, headers, data);
         Assert.That(checkInsert == EnumsSqliteMemory.Output.SUCCESS);
-        
+
         var qry = @"SELECT * FROM TEST_DB.TABLE_PERSONAL_DATA";
         var results = SqLiteLiteTools.Select(conn, qry);
 
         Assert.That(results.Count, Is.EqualTo(50));
-        
+
+    }
+
+    /// <summary>
+    /// Verifies the Execute method with parameters.
+    /// </summary>
+    [Test]
+    public void Execute_Handles_Parameters_Correctly()
+    {
+        var databaseId = $"sqlite-execute-{Guid.NewGuid():N}";
+        try
+        {
+            // Create a database and table for testing
+            MemoryDbSqliteExcelFunctions.Execute(databaseId, "CREATE TABLE Test (Id INTEGER, Name TEXT)", null, null);
+
+            // Insert data using parameters
+            var parameters = new object[,]
+            {
+                { "Id", 1 },
+                { "Name", "TestName" }
+            };
+            var result = MemoryDbSqliteExcelFunctions.Execute(
+                databaseId,
+                "INSERT INTO Test (Id, Name) VALUES ($Id, $Name)",
+                parameters,
+                null
+            );
+
+            Assert.That(result, Is.EqualTo(ExcelOutput.Success));
+
+            // Verify data was inserted
+            var queryResult = MemoryDbSqliteExcelFunctions.Query(
+                databaseId,
+                "SELECT * FROM Test",
+                true,
+                null,
+                null
+            );
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(queryResult.GetLength(0), Is.EqualTo(2)); // Includes headers
+                Assert.That(queryResult[1, 0], Is.EqualTo(1)); // Id
+                Assert.That(queryResult[1, 1], Is.EqualTo("TestName")); // Name
+            });
+        }
+        finally
+        {
+            MemoryDbSqliteExcelFunctions.Close(databaseId);
+        }
     }
 }
