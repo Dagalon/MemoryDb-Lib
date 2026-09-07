@@ -19,6 +19,7 @@ public static class EnumsSqliteMemory
         ERROR_TO_EXECUTE_QUERY = 10,
         TABLE_NOT_FOUND = 11,
         [Obsolete("Use ERROR_TO_DETACH_DATABASE")]
-        ERROR_TO_DEBUG = ERROR_TO_DETACH_DATABASE
+        ERROR_TO_DEBUG = ERROR_TO_DETACH_DATABASE,
+        ERROR_TO_WRITE_CSV = 12
     }
 }

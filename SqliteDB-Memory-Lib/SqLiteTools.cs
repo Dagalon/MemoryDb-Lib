@@ -1,9 +1,10 @@
+using CsvHelper;
+using CsvHelper.Configuration;
+using Microsoft.Data.Sqlite;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using CsvHelper;
-using Microsoft.Data.Sqlite;
 
 namespace SqliteDB_Memory_Lib;
 
@@ -184,7 +185,44 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.ERROR_TO_DETACH_DATABASE;
+            return EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV;
+        }
+    }
+
+    /// <summary>
+    /// Write to csv rom two-dimensional array.
+    /// </summary>
+    public static EnumsSqliteMemory.Output ArrayToCsv(object[,] data, string filePath)
+    {
+        try
+        {
+            using var writer = new StreamWriter(filePath);
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                Delimiter = ";"
+            };
+            using var csv = new CsvWriter(writer, config);
+
+
+            var rows = data.GetLength(0);
+            var cols = data.GetLength(1);
+
+            for (var row = 0; row < rows; row++)
+            {
+                for (var col = 0; col < cols; col++)
+                {
+                    csv.WriteField(data[row, col]);
+                }
+
+                csv.NextRecord();
+            }
+
+            return EnumsSqliteMemory.Output.SUCCESS;
+        }
+        catch (Exception ex)
+        {
+            CaptureException(ex);
+            return EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV;
         }
     }
 

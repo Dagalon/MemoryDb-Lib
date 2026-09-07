@@ -146,6 +146,29 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
+    [ExcelFunction(
+        Name = "MEMORY_DB.SQLITE.QUERY_TO_CSV",
+        Description = "Executes a SQLite query or a SQL file and spills the result to csv file.",
+        Category = Category)]
+    public static object QueryToCsv(string databaseId, string sql, bool includeHeaders, object[,]? parameters, string pathToSave, object? dependency)
+    {
+        try
+        {
+            var sqlText = SqliteDB_Memory_Lib.SqLiteLiteTools.ResolveSql(sql); 
+            var data = Relational.RelationalQuery(databaseId, sqlText, includeHeaders, isDuckDb: false, parameters: parameters);
+            var result  = SqliteDB_Memory_Lib.SqLiteLiteTools.ArrayToCsv(data, pathToSave);
+            return result.ToString();
+
+        }
+        catch (Exception ex)
+        {
+            return new object[,]
+            {
+                { ExcelOutput.Error(ex) }
+            };
+        }
+    }
+
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.DROP.TABLE", Description = "Drops a SQLite table from the selected attached database.", Category = Category)]
     public static string? DropTable(string databaseId, string table)
     {
