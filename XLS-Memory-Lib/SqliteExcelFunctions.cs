@@ -79,8 +79,8 @@ public static class MemoryDbSqliteExcelFunctions
             }
 
             var connection = Manager.GetConnection(databaseId);
-            var output_file = SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table, path).ToString();
-            return ExcelOutput.FromOperationString(output_file);
+            var output = SqliteDB_Memory_Lib.SqLiteLiteTools.CreateTable(connection, databaseId, table, path);
+            return ExcelOutput.FromStatus(output);
 
             
         }
@@ -176,11 +176,11 @@ public static class MemoryDbSqliteExcelFunctions
         {
             var (status, msg) = SqliteDB_Memory_Lib.SqLiteLiteTools.DropTable(Manager.GetConnection(databaseId), databaseId, table);
 
-            return status switch
+            return status.Output switch
             {
                 SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.SUCCESS => ExcelOutput.Success,
-                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.ToString()),
-                _ => ExcelOutput.Error(status.ToString())
+                SqliteDB_Memory_Lib.EnumsSqliteMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.Output.ToString()),
+                _ => ExcelOutput.Error(status.ExceptionMessage ?? status.Output.ToString())
             };
         }
         catch (Exception ex)

@@ -54,10 +54,11 @@ public class SqLiteToolsTests
         var conn = manager.GetConnection(databaseId);
 
         var dbOutput = SqLiteLiteTools.CreateDatabase(conn, databaseId, null);
-        Assert.That(dbOutput, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+        Assert.That(dbOutput.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
 
         var duplicateAttachOutput = SqLiteLiteTools.AttachedDataBase(conn, null, databaseId);
-        Assert.That(duplicateAttachOutput, Is.EqualTo(EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE));
+        Assert.That(duplicateAttachOutput.Output, Is.EqualTo(EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE));
+        Assert.That(duplicateAttachOutput.ExceptionMessage, Is.Not.Null.And.Not.Empty);
 
         var tableOutput = SqLiteLiteTools.CreateTable(
             conn,
@@ -65,31 +66,31 @@ public class SqLiteToolsTests
             tableId,
             ["Id", "Name"],
             new object[,] { { 1, "Alice" }, { 2, "Bob" } });
-        Assert.That(tableOutput, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+        Assert.That(tableOutput.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
 
         var listTables = SqLiteLiteTools.GetListTables(conn, databaseId);
         Assert.Multiple(() =>
         {
-            Assert.That(listTables.Item1, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+            Assert.That(listTables.Item1.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
             Assert.That(listTables.Item2, Does.Contain(tableId));
         });
 
         var dropOutput = SqLiteLiteTools.DropTable(conn, databaseId, tableId);
         Assert.Multiple(() =>
         {
-            Assert.That(dropOutput.Item1, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+            Assert.That(dropOutput.Item1.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
             Assert.That(dropOutput.Item2, Is.EqualTo(string.Empty));
         });
 
         var missingDropOutput = SqLiteLiteTools.DropTable(conn, databaseId, tableId);
         Assert.Multiple(() =>
         {
-            Assert.That(missingDropOutput.Item1, Is.EqualTo(EnumsSqliteMemory.Output.TABLE_NOT_FOUND));
+            Assert.That(missingDropOutput.Item1.Output, Is.EqualTo(EnumsSqliteMemory.Output.TABLE_NOT_FOUND));
             Assert.That(missingDropOutput.Item2, Is.EqualTo($"Database '{databaseId}' does not contain table '{tableId}'."));
         });
 
         var deleteOutput = SqLiteLiteTools.DeleteDataBase(conn, databaseId);
-        Assert.That(deleteOutput, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+        Assert.That(deleteOutput.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
         Assert.That(SqLiteLiteTools.GetListDataBase(conn), Does.Not.Contain(databaseId));
     }
 }

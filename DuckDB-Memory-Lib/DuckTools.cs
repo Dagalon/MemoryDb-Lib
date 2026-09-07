@@ -25,7 +25,7 @@ public static class DuckTools
     /// <summary>
     /// Creates or attaches an DuckDB database to the provided connection.
     /// </summary>
-    public static EnumsDuckMemory.Output CreateDatabase(DuckDBConnection connection, string? idDataBase, string? path)
+    public static DuckOperationResult CreateDatabase(DuckDBConnection connection, string? idDataBase, string? path)
     {
         var listDataBase = GetListDataBase(connection);
 
@@ -58,9 +58,9 @@ public static class DuckTools
 
         var attachedOutPut= AttachedDataBase(connection, path, idDataBase);
 
-        if (attachedOutPut == EnumsDuckMemory.Output.ERROR_TO_ATTACHED_DATABASE)
+        if (!attachedOutPut.IsSuccess)
         {
-            return EnumsDuckMemory.Output.ERROR_TO_ATTACHED_DATABASE;
+            return attachedOutPut;
         }
 
         return EnumsDuckMemory.Output.SUCCESS;
@@ -121,7 +121,7 @@ public static class DuckTools
     /// </summary>
 
 #pragma warning disable DuckDBNET001
-    public static EnumsDuckMemory.Output RegisterScalarFunction<TInput, TOutput>(
+    public static DuckOperationResult RegisterScalarFunction<TInput, TOutput>(
         DuckDBConnection db,
         string idFunction,
         Action<IReadOnlyList<IDuckDBDataReader>, IDuckDBDataWriter, ulong> func)
@@ -137,7 +137,7 @@ public static class DuckTools
     /// <summary>
     /// Attaches an external database file to the provided connection, creating the file when required.
     /// </summary>
-    public static EnumsDuckMemory.Output AttachedDataBase(DuckDBConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
+    public static DuckOperationResult AttachedDataBase(DuckDBConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
     {
         try
         {
@@ -187,7 +187,7 @@ public static class DuckTools
             catch (DuckDBException ex)
             {
                 CaptureException(ex);
-                return EnumsDuckMemory.Output.ERROR_TO_ATTACHED_DATABASE;
+                return new(EnumsDuckMemory.Output.ERROR_TO_ATTACHED_DATABASE, ex.Message);
             }
 
             return EnumsDuckMemory.Output.SUCCESS;
@@ -195,14 +195,14 @@ public static class DuckTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsDuckMemory.Output.DB_NOT_FOUND;
+            return new(EnumsDuckMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
     
     /// <summary>
     /// Retrieves the list of tables contained in the specified database alias.
     /// </summary>
-    public static (EnumsDuckMemory.Output, List<string>?) GetListTables(DuckDBConnection db, string idDataBase)
+    public static (DuckOperationResult Output, List<string>? Tables) GetListTables(DuckDBConnection db, string idDataBase)
     {
         var dataBases = GetListDataBase(db);
 
@@ -234,14 +234,14 @@ public static class DuckTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsDuckMemory.Output.DB_NOT_FOUND, null);
+            return (new DuckOperationResult(EnumsDuckMemory.Output.DB_NOT_FOUND, ex.Message), null);
         }
     }
 
     /// <summary>
     /// Drops a table from the specified database alias when it exists.
     /// </summary>
-    public static (EnumsDuckMemory.Output, string?) DropTable(DuckDBConnection db, string idDataBase, string idTable)
+    public static (DuckOperationResult Output, string? Message) DropTable(DuckDBConnection db, string idDataBase, string idTable)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -268,14 +268,14 @@ public static class DuckTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsDuckMemory.Output.DB_NOT_FOUND, "Error dropping table");
+            return (new DuckOperationResult(EnumsDuckMemory.Output.DB_NOT_FOUND, ex.Message), "Error dropping table");
         }
     }
 
     /// <summary>
     /// Detaches a database alias from the connection.
     /// </summary>
-    public static EnumsDuckMemory.Output DeleteDataBase(DuckDBConnection db, string idDatabase)
+    public static DuckOperationResult DeleteDataBase(DuckDBConnection db, string idDatabase)
     {
         if (string.IsNullOrEmpty(idDatabase))
         {
@@ -292,7 +292,7 @@ public static class DuckTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsDuckMemory.Output.DB_NOT_FOUND;
+            return new(EnumsDuckMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 

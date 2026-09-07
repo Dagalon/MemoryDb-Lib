@@ -13,7 +13,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Creates or attaches an SQLite database to the provided connection.
     /// </summary>
-    public static EnumsSqliteMemory.Output CreateDatabase(SqliteConnection connection, string? idDataBase, string? path, 
+    public static SqliteOperationResult CreateDatabase(SqliteConnection connection, string? idDataBase, string? path,
         bool walMode = false)
     {
         var listDataBase = GetListDataBase(connection);
@@ -53,7 +53,11 @@ public static partial class SqLiteLiteTools
 
         if (walMode)
         {
-            ActivateWalMode(connection);
+            var walOutput = ActivateWalMode(connection);
+            if (!walOutput.IsSuccess)
+            {
+                return walOutput;
+            }
         }
 
         return EnumsSqliteMemory.Output.SUCCESS;
@@ -62,7 +66,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Creates a table inside the provided database and optionally seeds it with data.
     /// </summary>
-    public static EnumsSqliteMemory.Output CreateTable(SqliteConnection db, string idDataBase, string idTable, List<string> headers, object[,]? values)
+    public static SqliteOperationResult CreateTable(SqliteConnection db, string idDataBase, string idTable, List<string> headers, object[,]? values)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -82,7 +86,7 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
     
@@ -112,7 +116,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Creates a table and populates it with data imported from a CSV file.
     /// </summary>
-    public static EnumsSqliteMemory.Output CreateTable(SqliteConnection db, string idDataBase, string idTable, string pathCsvValues)
+    public static SqliteOperationResult CreateTable(SqliteConnection db, string idDataBase, string idTable, string pathCsvValues)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -185,14 +189,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV;
+            return new(EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV, ex.Message);
         }
     }
 
     /// <summary>
     /// Write to csv rom two-dimensional array.
     /// </summary>
-    public static EnumsSqliteMemory.Output ArrayToCsv(object[,] data, string filePath)
+    public static SqliteOperationResult ArrayToCsv(object[,] data, string filePath)
     {
         try
         {
@@ -222,14 +226,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV;
+            return new(EnumsSqliteMemory.Output.ERROR_TO_WRITE_CSV, ex.Message);
         }
     }
 
     /// <summary>
     /// Inserts rows into the target table by using the contents of a CSV file.
     /// </summary>
-    public static EnumsSqliteMemory.Output Insert(SqliteConnection db, string idDataBase, string idTable, 
+    public static SqliteOperationResult Insert(SqliteConnection db, string idDataBase, string idTable,
         string pathCsvValues, string extraEnd, string delimiter=";")
     {
         if (string.IsNullOrEmpty(pathCsvValues))
@@ -289,14 +293,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
        
     /// <summary>
     /// Inserts rows into the target table by using the provided in-memory matrix.
     /// </summary>
-    public static EnumsSqliteMemory.Output Insert(SqliteConnection db, string idDataBase, string idTable, List<String> fields,
+    public static SqliteOperationResult Insert(SqliteConnection db, string idDataBase, string idTable, List<String> fields,
         object[,] values, string? extraEnd = null)
     {
 
@@ -313,7 +317,7 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 
@@ -343,7 +347,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Attaches an external database file to the provided connection, creating the file when required.
     /// </summary>
-    public static EnumsSqliteMemory.Output AttachedDataBase(SqliteConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
+    public static SqliteOperationResult AttachedDataBase(SqliteConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
     {
         try
         {
@@ -387,7 +391,7 @@ public static partial class SqLiteLiteTools
             catch (SqliteException ex)
             {
                 CaptureException(ex);
-                return EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE;
+                return new(EnumsSqliteMemory.Output.ERROR_TO_ATTACHED_DATABASE, ex.Message);
             }
 
             return EnumsSqliteMemory.Output.SUCCESS;
@@ -395,14 +399,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 
     /// <summary>
     /// Enables write-ahead logging on the supplied SQLite connection.
     /// </summary>
-    public static EnumsSqliteMemory.Output ActivateWalMode(SqliteConnection db)
+    public static SqliteOperationResult ActivateWalMode(SqliteConnection db)
     {
         try
         {
@@ -413,7 +417,7 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 
@@ -450,7 +454,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Retrieves the list of tables contained in the specified database alias.
     /// </summary>
-    public static (EnumsSqliteMemory.Output, List<string>?) GetListTables(SqliteConnection db, string idDataBase)
+    public static (SqliteOperationResult Output, List<string>? Tables) GetListTables(SqliteConnection db, string idDataBase)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -486,14 +490,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsSqliteMemory.Output.DB_NOT_FOUND, null);
+            return (new SqliteOperationResult(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message), null);
         }
     }
 
     /// <summary>
     /// Executes a SQL script stored on disk that does not return rows.
     /// </summary>
-    public static EnumsSqliteMemory.Output ExecuteQryNotReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
+    public static SqliteOperationResult ExecuteQryNotReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
     {
         if (string.IsNullOrEmpty(qryFilePath))
         {
@@ -528,14 +532,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 
     /// <summary>
     /// Loads a SQL script and replaces the specified placeholders with the provided values.
     /// </summary>
-    public static (EnumsSqliteMemory.Output, string?) SubstituteParameters(string qryFilePath, Dictionary<string, string> parameters)
+    public static (SqliteOperationResult Output, string? Sql) SubstituteParameters(string qryFilePath, Dictionary<string, string> parameters)
     {
         if (string.IsNullOrEmpty(qryFilePath))
         {
@@ -562,14 +566,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
+            return (new SqliteOperationResult(EnumsSqliteMemory.Output.PATH_NOT_FOUND, ex.Message), null);
         }
     }
     
     /// <summary>
     /// Executes a SQL script stored on disk and returns the resulting rows.
     /// </summary>
-    public static (EnumsSqliteMemory.Output, List<Dictionary<string, object>>?) ExecuteQryReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
+    public static (SqliteOperationResult Output, List<Dictionary<string, object>>? Rows) ExecuteQryReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
     {
         if (string.IsNullOrEmpty(qryFilePath))
         {
@@ -598,14 +602,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
+            return (new SqliteOperationResult(EnumsSqliteMemory.Output.PATH_NOT_FOUND, ex.Message), null);
         }
     }
 
     /// <summary>
     /// Persists the contents of an attached database to a new file on disk.
     /// </summary>
-    public static EnumsSqliteMemory.Output SaveDataBase(SqliteConnection db, string idDataBase, string idPathFile)
+    public static SqliteOperationResult SaveDataBase(SqliteConnection db, string idDataBase, string idPathFile)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -629,14 +633,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 
     /// <summary>
     /// Identifies the parameter placeholders present in the provided SQL script.
     /// </summary>
-    public static (EnumsSqliteMemory.Output, object[]?) GetListParameters(string qryFilePath, string qry)
+    public static (SqliteOperationResult Output, object[]? Parameters) GetListParameters(string qryFilePath, string qry)
     {
         var qryToExecute = "";  
         if (string.IsNullOrEmpty(qry))
@@ -663,7 +667,7 @@ public static partial class SqLiteLiteTools
             catch (Exception ex)
             {
                 CaptureException(ex);
-                return (EnumsSqliteMemory.Output.PATH_NOT_FOUND, null);
+                return (new SqliteOperationResult(EnumsSqliteMemory.Output.PATH_NOT_FOUND, ex.Message), null);
             }
         }
         else
@@ -683,7 +687,7 @@ public static partial class SqLiteLiteTools
     /// <summary>
     /// Drops a table from the specified database alias when it exists.
     /// </summary>
-    public static (EnumsSqliteMemory.Output, string?) DropTable(SqliteConnection db, string idDataBase, string idTable)
+    public static (SqliteOperationResult Output, string? Message) DropTable(SqliteConnection db, string idDataBase, string idTable)
     {
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -710,14 +714,14 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return (EnumsSqliteMemory.Output.DB_NOT_FOUND, ErrorDroppingTableMessage(idDataBase, idTable));
+            return (new SqliteOperationResult(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message), ErrorDroppingTableMessage(idDataBase, idTable));
         }
     }
 
     /// <summary>
     /// Detaches a database alias from the connection.
     /// </summary>
-    public static EnumsSqliteMemory.Output DeleteDataBase(SqliteConnection db, string idDatabase)
+    public static SqliteOperationResult DeleteDataBase(SqliteConnection db, string idDatabase)
     {
         if (string.IsNullOrEmpty(idDatabase))
         {
@@ -734,7 +738,7 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return new(EnumsSqliteMemory.Output.DB_NOT_FOUND, ex.Message);
         }
     }
 

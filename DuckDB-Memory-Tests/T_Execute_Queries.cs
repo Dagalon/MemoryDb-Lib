@@ -27,13 +27,13 @@ public class ExecuteQueries
         var conn = manager.GetConnection();
         
         var dbOutput = DuckTools.CreateDatabase(conn, idDataBase, null);
-        Assert.That(dbOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(dbOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
         
         var result = QueryExecutor.CreateParquetTable(conn, idDataBase, idTable, pathFile);
         Assert.That(result, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
         
         var listTables = DuckTools.GetListTables(conn, idDataBase);
-        Assert.That(listTables.Item1, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(listTables.Item1.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
         Assert.That(listTables.Item2 != null && listTables.Item2.Contains("CUSTOMERS_DATA"));
         
         var qryExample = $@"SELECT * FROM {idDataBase}.{idTable}";
