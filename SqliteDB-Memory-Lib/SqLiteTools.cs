@@ -82,7 +82,7 @@ public static partial class SqLiteLiteTools
         catch (Exception ex)
         {
             CaptureException(ex);
-            return EnumsSqliteMemory.Output.DB_NOT_FOUND;
+            return EnumsSqliteMemory.Output.ERROR_TO_CREATE_TABLE;
         }
     }
     

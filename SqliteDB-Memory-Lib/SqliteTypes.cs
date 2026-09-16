@@ -8,20 +8,25 @@ namespace SqliteDB_Memory_Lib
         /// <summary>
         /// Translates a .NET <see cref="Type"/> into its SQLite <see cref="DbType"/> counterpart.
         /// </summary>
-        public static DbType GetDbType(Type type)
+        public static string GetDbType(Type type)
         {
             return type switch
             {
-                _ when type == typeof(string) => DbType.String,
-                _ when type == typeof(int) => DbType.Int32,
-                _ when type == typeof(long) => DbType.Int64,
-                _ when type == typeof(double) => DbType.Double,
-                _ when type == typeof(float) => DbType.Single,
-                _ when type == typeof(bool) => DbType.Boolean,
-                _ when type == typeof(DateTime) => DbType.DateTime,
-                _ when type == typeof(decimal) => DbType.Decimal,
-                _ when type == typeof(byte[]) => DbType.Binary,
-                _ => DbType.String 
+                _ when type == typeof(string) => "TEXT",
+
+                _ when type == typeof(int) => "INTEGER",
+                _ when type == typeof(long) => "INTEGER",
+                _ when type == typeof(bool) => "INTEGER",
+
+                _ when type == typeof(double) => "REAL",
+                _ when type == typeof(float) => "REAL",
+                _ when type == typeof(decimal) => "REAL",
+
+                _ when type == typeof(DateTime) => "TEXT",
+
+                _ when type == typeof(byte[]) => "BLOB",
+
+                _ => "TEXT"
             };
         }
 
@@ -50,37 +55,67 @@ namespace SqliteDB_Memory_Lib
 
             return (value, typeof(string));
         }
-        
+
         /// <summary>
         /// Infers the .NET type of each column from the first row of data in the specified value range.
         /// </summary>
         public static List<Type> InferTypes(object[,] values, int noFields)
         {
             if (values.GetLength(0) == 0)
-                throw new ArgumentException("Cannot infer column types from an empty values range.", nameof(values));
+                throw new ArgumentException(
+                    "Cannot infer column types from an empty values range.",
+                    nameof(values));
 
+            var noRows = values.GetLength(0);
             var types = new List<Type>(noFields);
 
             for (var j = 0; j < noFields; j++)
             {
-                var value = values[0, j];
+                Type? detectedType = null;
 
-                var type = value switch
+                for (var i = 0; i < noRows; i++)
                 {
-                    null => typeof(string),
-                    string => typeof(string),
-                    int => typeof(int),
-                    long => typeof(long),
-                    double => typeof(double),
-                    float => typeof(float),
-                    decimal => typeof(decimal),
-                    bool => typeof(bool),
-                    DateTime => typeof(DateTime),
-                    byte[] => typeof(byte[]),
-                    _ => typeof(string)
-                };
+                    var value = values[i, j];
 
-                types.Add(type);
+                    // Ignore null values when inferring the column type
+                    if (value == null || value == DBNull.Value)
+                        continue;
+
+                    var currentType = value switch
+                    {
+                        string => typeof(string),
+                        int => typeof(int),
+                        long => typeof(long),
+                        double => typeof(double),
+                        float => typeof(float),
+                        decimal => typeof(decimal),
+                        bool => typeof(bool),
+                        DateTime => typeof(DateTime),
+                        byte[] => typeof(byte[]),
+                        _ => typeof(string)
+                    };
+
+                    // If any value is a string, treat the entire column as text
+                    if (currentType == typeof(string))
+                    {
+                        detectedType = typeof(string);
+                        break;
+                    }
+
+                    // Use the first non-null value as the initial detected type
+                    detectedType ??= currentType;
+
+                    // If the column contains mixed types, fall back to string
+                    // to avoid losing information such as leading zeros
+                    if (detectedType != currentType)
+                    {
+                        detectedType = typeof(string);
+                        break;
+                    }
+                }
+
+                // Default to string when the column contains only null values
+                types.Add(detectedType ?? typeof(string));
             }
 
             return types;

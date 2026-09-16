@@ -32,7 +32,16 @@ internal static class Tables
         {
             var values = new object[fieldCount];
             reader.GetValues(values);
-            rows.Add(values.Select(NormalizeCell).ToArray());
+
+            rows.Add(values.Select(value =>
+            {
+                var normalized = NormalizeCell(value);
+
+                if (normalized is string text)
+                    return text; 
+
+                return normalized;
+            }).ToArray());
         }
 
         if (rows.Count == 0)

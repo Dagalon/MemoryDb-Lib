@@ -58,10 +58,23 @@ namespace SqliteDB_Memory_Lib
                         {
                             var value = values[i, j];
 
-                            if (!string.IsNullOrEmpty(value.ToString()))
+                            if (!string.IsNullOrEmpty(value?.ToString()))
                                 jumpRow = false;
 
-                            cmd.Parameters.AddWithValue(SqLiteLiteTools.ParameterName(j), value ?? DBNull.Value);
+                            var parameter = cmd.CreateParameter();
+                            parameter.ParameterName = SqLiteLiteTools.ParameterName(j);
+
+                            if (value is string text)
+                            {
+                                parameter.DbType = DbType.String;
+                                parameter.Value = text;
+                            }
+                            else
+                            {
+                                parameter.Value = value ?? DBNull.Value;
+                            }
+
+                            cmd.Parameters.Add(parameter);
                         }
 
                         if (!jumpRow)
