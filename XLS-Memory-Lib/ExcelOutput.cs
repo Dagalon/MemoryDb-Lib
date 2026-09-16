@@ -10,6 +10,20 @@ public static class ExcelOutput
         return IsSuccess(status) ? successMessage ?? Success : Error(status.ToString());
     }
 
+    public static string FromStatus(SqliteDB_Memory_Lib.SqliteOperationResult result, string? successMessage = null)
+    {
+        return result.IsSuccess
+            ? successMessage ?? Success
+            : Error(result.ExceptionMessage ?? result.Output.ToString());
+    }
+
+    public static string FromStatus(DuckDb_Memory_Lib.DuckOperationResult result, string? successMessage = null)
+    {
+        return result.IsSuccess
+            ? successMessage ?? Success
+            : Error(result.ExceptionMessage ?? result.Output.ToString());
+    }
+
     public static string FromOperationString(string output)
     {
         if (string.Equals(output, Success, StringComparison.OrdinalIgnoreCase))

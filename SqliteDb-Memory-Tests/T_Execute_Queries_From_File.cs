@@ -47,7 +47,11 @@ public class ExecuteQueriesFromFile
         var parameters = new Dictionary<string, string> { { "@id", "1" }, { "@name", @"'Juan'" } };
         var result = SqLiteLiteTools.ExecuteQryReader(conn, pathQry, parameters);
         
-        Assert.That(result is { Item1: EnumsSqliteMemory.Output.SUCCESS, Item2.Count: 1 });
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Output.Output, Is.EqualTo(EnumsSqliteMemory.Output.SUCCESS));
+            Assert.That(result.Rows, Has.Count.EqualTo(1));
+        });
     }
 
     /// <summary>

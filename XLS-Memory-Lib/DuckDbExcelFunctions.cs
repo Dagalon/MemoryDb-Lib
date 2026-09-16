@@ -141,11 +141,11 @@ public static class MemoryDbDuckDbExcelFunctions
         try
         {
             var (status, msg) = DuckDb_Memory_Lib.DuckTools.DropTable(Manager.GetConnection(databaseId), databaseId, table);
-            return status switch
+            return status.Output switch
             {
                 DuckDb_Memory_Lib.EnumsDuckMemory.Output.SUCCESS => ExcelOutput.Success,
-                DuckDb_Memory_Lib.EnumsDuckMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.ToString()),
-                _ => ExcelOutput.Error(status.ToString())
+                DuckDb_Memory_Lib.EnumsDuckMemory.Output.TABLE_NOT_FOUND => ExcelOutput.Error(msg ?? status.Output.ToString()),
+                _ => ExcelOutput.Error(status.ExceptionMessage ?? status.Output.ToString())
             };
         }
         catch (Exception ex)

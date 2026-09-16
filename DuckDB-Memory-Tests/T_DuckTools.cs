@@ -61,7 +61,7 @@ public class DuckToolsTests
         var conn = ConnectionManager.GetInstance().GetConnection(databaseId);
 
         var dbOutput = DuckTools.CreateDatabase(conn, databaseId, null);
-        Assert.That(dbOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(dbOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
 
         var createOutput = QueryExecutor.CreateTable(conn, databaseId, tableId, ["id INTEGER"]);
         Assert.That(createOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
@@ -69,21 +69,21 @@ public class DuckToolsTests
         var listTables = DuckTools.GetListTables(conn, databaseId);
         Assert.Multiple(() =>
         {
-            Assert.That(listTables.Item1, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+            Assert.That(listTables.Item1.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
             Assert.That(listTables.Item2, Does.Contain(tableId));
         });
 
         var dropOutput = DuckTools.DropTable(conn, databaseId, tableId);
         Assert.Multiple(() =>
         {
-            Assert.That(dropOutput.Item1, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+            Assert.That(dropOutput.Item1.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
             Assert.That(dropOutput.Item2, Is.EqualTo(string.Empty));
         });
 
         var missingDropOutput = DuckTools.DropTable(conn, databaseId, tableId);
         Assert.Multiple(() =>
         {
-            Assert.That(missingDropOutput.Item1, Is.EqualTo(EnumsDuckMemory.Output.TABLE_NOT_FOUND));
+            Assert.That(missingDropOutput.Item1.Output, Is.EqualTo(EnumsDuckMemory.Output.TABLE_NOT_FOUND));
             Assert.That(missingDropOutput.Item2, Does.Contain(tableId));
         });
     }
@@ -103,7 +103,7 @@ public class DuckToolsTests
         var conn = ConnectionManager.GetInstance().GetConnection(databaseId);
 
         var dbOutput = DuckTools.CreateDatabase(conn, databaseId, null);
-        Assert.That(dbOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(dbOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
 
         var createOutput = QueryExecutor.CreateTable(conn, databaseId, tableId, ["id INTEGER"]);
         Assert.That(createOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
@@ -119,14 +119,21 @@ public class DuckToolsTests
         var conn = ConnectionManager.GetInstance().GetConnection(databaseId);
 
         var dbOutput = DuckTools.CreateDatabase(conn, databaseId, null);
-        Assert.That(dbOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(dbOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
         Assert.That(DuckTools.GetListDataBase(conn), Does.Contain(databaseId));
 
         var detachOutput = DuckTools.DeleteDataBase(conn, databaseId);
-        Assert.That(detachOutput, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
+        Assert.That(detachOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.SUCCESS));
         Assert.That(DuckTools.GetListDataBase(conn), Does.Not.Contain(databaseId));
 
         var blankDetachOutput = DuckTools.DeleteDataBase(conn, string.Empty);
-        Assert.That(blankDetachOutput, Is.EqualTo(EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY));
+        Assert.That(blankDetachOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY));
+
+        var failedDetachOutput = DuckTools.DeleteDataBase(conn, $"MISSING_{Guid.NewGuid():N}");
+        Assert.Multiple(() =>
+        {
+            Assert.That(failedDetachOutput.Output, Is.EqualTo(EnumsDuckMemory.Output.DB_NOT_FOUND));
+            Assert.That(failedDetachOutput.ExceptionMessage, Is.Not.Null.And.Not.Empty);
+        });
     }
 }
