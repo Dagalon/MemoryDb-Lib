@@ -1,4 +1,5 @@
-﻿using LiteDB;
+using MemoryDb_Lib.Shared;
+using LiteDB;
 
 namespace LiteDb_Memory_Lib;
 
@@ -22,7 +23,7 @@ public static class FileStorageTools
 
         var fs = db.GetStorage<string>(id, GetAliasFiles(id));
 
-        using var stream = new FileStream(pathFile, FileMode.Open, FileAccess.Read);
+        using var stream = SharedFile.OpenRead(pathFile);
         fs.Upload(fileName, pathFile, stream);
 
         db.Checkpoint();
@@ -41,7 +42,7 @@ public static class FileStorageTools
             return EnumsLiteDbMemory.Output.DB_NOT_FOUND;
         }
 
-        var fs = db.GetStorage<string>(fileName, id);
+        var fs = db.GetStorage<string>(id, GetAliasFiles(id));
 
         if (stream is null)
         {
@@ -50,12 +51,12 @@ public static class FileStorageTools
                 return EnumsLiteDbMemory.Output.PATH_NOT_FOUND;
             }
 
-            using var memoryStreamFile = new MemoryStream(File.ReadAllBytes(fileName));
-            fs.Upload(id, fileName, memoryStreamFile);
+            using var sourceFile = SharedFile.OpenRead(fileName);
+            fs.Upload(fileName, fileName, sourceFile);
         }
         else
         {
-            fs.Upload(id, fileName, stream);
+            fs.Upload(fileName, fileName, stream);
         }
 
         db.Checkpoint();

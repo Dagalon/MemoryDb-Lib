@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>LiteDB_Memory_Lib</RootNamespace>
@@ -8,5 +8,8 @@
 
     <ItemGroup>
       <PackageReference Update="Microsoft.Data.Sqlite" Version="11.0.0-preview.5.26302.115" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Include="..\Shared\SharedFile.cs" Link="Shared\SharedFile.cs" />
     </ItemGroup>
 </Project>

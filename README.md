@@ -24,6 +24,22 @@ A collection of helper libraries that make it simple to spin up disposable, in-m
 - [Testing](#testing)
 - [License](#license)
 
+## Local files and concurrent access
+
+CSV, JSON and SQL readers and LiteDB uploads share source files for reading, writing and deletion. Another application can keep the file open if it permits reading. Exclusive locks still fail. Streams are disposed on success and on errors. Sharing does not provide a consistent snapshot of a file being modified; import completed/saved data when consistency matters.
+
+Parquet imports use DuckDB's native reader and are tested with the source file held open for writing. Database files are opened through their engines, never copied as raw bytes to bypass locks:
+
+- SQLite and DuckDB `GetInstance(path)` open the actual file, creating a database when the connection opens if the file does not exist. Omitting the path creates an in-memory database. This corrects the previous silent fallback to an empty in-memory database.
+- Excel `CREATE_DB` uses an in-memory root connection and attaches the local database under the requested name. Attached data remains file-backed. Closing and reopening the same path is supported.
+- SQLite reads during a WAL write transaction see committed data; other locking modes may block or report a busy database.
+- LiteDB shared access requires `isShared: true` (Excel: `shared=true`) and compatible access by the other application. Direct mode remains exclusive.
+- DuckDB retains its native restrictions on access from another writer process. See the [DuckDB concurrency documentation](https://duckdb.org/docs/current/connect/concurrency).
+
+Both LiteDB upload overloads use the collection/chunk naming and file identifiers used by `Find`: `id` selects the storage collection and `fileName` identifies the stored file. A null stream reads `fileName` from disk.
+
+Regression tests cover shared CSV/JSON/SQL/Parquet reads, both disk upload paths, exclusive-lock errors, failed-attach retries, database creation/reopening, Excel wrappers and SQLite WAL reads.
+
 ## Why use these libraries?
 
 Creating an in-memory database for a single test is straightforward, but making it repeatable, discoverable, and safe across an entire test suite is not. These libraries encapsulate the boilerplate so you can:

@@ -11,7 +11,7 @@ public static class MemoryDbSqliteExcelFunctions
     {
         try
         {
-            var conn =  Manager.GetConnection(name, string.IsNullOrWhiteSpace(path) ? null : path);
+            var conn =  Manager.GetConnection(name);
             var output = SqliteDB_Memory_Lib.SqLiteLiteTools.CreateDatabase(conn,  NullIfBlank(name), NullIfBlank(path));
 
             return ExcelOutput.FromStatus(output);

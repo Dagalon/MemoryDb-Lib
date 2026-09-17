@@ -11,7 +11,7 @@ public static class MemoryDbDuckDbExcelFunctions
     {
         try
         {
-            var conn = Manager.GetConnection(name, NullIfBlank(path));
+            var conn = Manager.GetConnection(name);
             var output = DuckDb_Memory_Lib.DuckTools.CreateDatabase(conn, NullIfBlank(name), NullIfBlank(path));
 
             return ExcelOutput.FromStatus(output);

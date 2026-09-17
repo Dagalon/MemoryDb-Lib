@@ -85,11 +85,13 @@ public sealed class ConnectionManager
                 DisposeDatabaseLocked(alias);
             }
 
-            var connectionString = isShared
-                ? @$"filename={path};connection=shared"
-                : @$"filename={path};connection=direct";
+            var connectionString = new ConnectionString
+            {
+                Filename = Path.GetFullPath(path),
+                Connection = isShared ? ConnectionType.Shared : ConnectionType.Direct
+            };
 
-            _databases[alias] = new LiteDatabase(new ConnectionString(connectionString));
+            _databases[alias] = new LiteDatabase(connectionString);
             if (_memoryFiles.Remove(alias, out var memoryStream))
             {
                 memoryStream.Dispose();

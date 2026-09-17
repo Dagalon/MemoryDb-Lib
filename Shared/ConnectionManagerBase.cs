@@ -27,7 +27,15 @@ public abstract class ConnectionManagerBase<TConnection> where TConnection : DbC
             }
 
             var newConnection = connectionFactory(path);
-            EnsureOpen(newConnection);
+            try
+            {
+                EnsureOpen(newConnection);
+            }
+            catch
+            {
+                newConnection.Dispose();
+                throw;
+            }
             _connections[normalizedAlias] = newConnection;
 
             return newConnection;

@@ -1,3 +1,4 @@
+using MemoryDb_Lib.Shared;
 using System.Diagnostics;
 using DuckDB.NET.Data;
 using DuckDB.NET.Data.DataChunk.Reader;
@@ -14,12 +15,13 @@ public static class DuckTools
     {
         if (string.IsNullOrEmpty(path))
         {
-            return new DuckDBConnection("Data Source=:memory:?Cache=Shared");
+            return new DuckDBConnection("Data Source=:memory:");
         }
 
-        return File.Exists(path)
-            ? new DuckDBConnection($"Data Source={path};Mode=Memory")
-            : new DuckDBConnection("Data Source=:memory:");
+        return new DuckDBConnection(new DuckDBConnectionStringBuilder
+        {
+            DataSource = Path.GetFullPath(path)
+        }.ToString());
     }
     
     /// <summary>
@@ -46,16 +48,6 @@ public static class DuckTools
 
         }
                
-        if (path != null && KeeperRegisterIdDataBase.CheckPathDataBase(path))
-        {
-            return EnumsDuckMemory.Output.THERE_EXISTS_DATABASE;
-        }
-
-        if (!string.IsNullOrEmpty(path))
-        {
-            KeeperRegisterIdDataBase.Register(path, idDataBase);
-        }
-
         var attachedOutPut= AttachedDataBase(connection, path, idDataBase);
 
         if (!attachedOutPut.IsSuccess)
@@ -63,6 +55,10 @@ public static class DuckTools
             return attachedOutPut;
         }
 
+        if (!string.IsNullOrEmpty(path))
+        {
+            KeeperRegisterIdDataBase.Register(path, idDataBase);
+        }
         return EnumsDuckMemory.Output.SUCCESS;
     }
     
@@ -94,7 +90,7 @@ public static class DuckTools
         if (string.IsNullOrWhiteSpace(sqlOrPath))
             throw new ArgumentException("SQL query or file path cannot be empty.", nameof(sqlOrPath));
 
-        return File.Exists(sqlOrPath) ? File.ReadAllText(sqlOrPath) : sqlOrPath;
+        return File.Exists(sqlOrPath) ? SharedFile.ReadAllText(sqlOrPath) : sqlOrPath;
     }
 
     /// <summary>
@@ -141,34 +137,17 @@ public static class DuckTools
     {
         try
         {
-            if (!string.IsNullOrEmpty(path)){
-                if (File.Exists(path))
-                {
-                    if (removeIfExist)
-                    {
-                        File.Delete(path);
-                    }
-
-                }
-                       
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = Path.GetFullPath(path);
+                if (removeIfExist && File.Exists(path))
+                    File.Delete(path);
                 var directory = Path.GetDirectoryName(path);
-                if (Directory.Exists(directory))
-                {
-                    if (!File.Exists(path))
-                    {
-                        File.Create(path).Close();
-                    }
-
-                }
-                else
-                {
-                    if (directory != null) Directory.CreateDirectory(directory);
-                    File.Create(path).Close();
-                }
-
+                if (!string.IsNullOrEmpty(directory))
+                    Directory.CreateDirectory(directory);
+                // Let the database engine initialize the file.
             }
-
-            var strConnection =   string.IsNullOrEmpty(path) ? ":memory:" : path;
+            var strConnection = (string.IsNullOrEmpty(path) ? ":memory:" : path).Replace("'", "''");
             string  attachedQry;
             if (String.IsNullOrEmpty(aliasDataBase))
             {

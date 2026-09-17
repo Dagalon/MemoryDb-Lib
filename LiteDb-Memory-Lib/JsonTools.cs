@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+using MemoryDb_Lib.Shared;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
@@ -21,7 +22,7 @@ public static class JsonTools
             throw new FileNotFoundException("The JSON file could not be located.", jsonPath);
         }
 
-        using StreamReader reader = new(jsonPath);
+        using var reader = SharedFile.OpenText(jsonPath);
         var json = reader.ReadToEnd();
 
         if (string.IsNullOrWhiteSpace(json))

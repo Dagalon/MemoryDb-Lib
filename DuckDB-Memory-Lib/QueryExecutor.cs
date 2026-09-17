@@ -71,7 +71,7 @@ public static class QueryExecutor
         {
             var tableName = $"{DuckTools.QuoteIdentifier(idDataBase)}.{DuckTools.QuoteIdentifier(idTable)}";
             var parquetPath = parquetPathFile.Replace("'", "''");
-            var qry = $"CREATE OR REPLACE TABLE {tableName} AS SELECT * FROM '{parquetPath}';";
+            var qry = $"CREATE OR REPLACE TABLE {tableName} AS SELECT * FROM read_parquet('{parquetPath}');";
             using var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
 

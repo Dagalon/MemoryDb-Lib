@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>SqliteDB_Memory_Lib</RootNamespace>
@@ -13,4 +13,7 @@
       <Compile Include="..\Shared\ConnectionManagerBase.cs" Link="Shared\ConnectionManagerBase.cs" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\Shared\SharedFile.cs" Link="Shared\SharedFile.cs" />
+    </ItemGroup>
 </Project>

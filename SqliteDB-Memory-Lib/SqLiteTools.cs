@@ -1,3 +1,4 @@
+using MemoryDb_Lib.Shared;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.Data.Sqlite;
@@ -34,16 +35,6 @@ public static partial class SqLiteLiteTools
             idDataBase = Path.GetFileName(path).Split('.')[0];
         }
                
-        if (path != null && KeeperRegisterIdDataBase.CheckPathDataBase(path))
-        {
-            return EnumsSqliteMemory.Output.THERE_EXISTS_DATABASE;
-        }
-
-        if (!string.IsNullOrEmpty(path))
-        {
-            KeeperRegisterIdDataBase.Register(path, idDataBase);
-        }
-
         var attachedOutPut = AttachedDataBase(connection, path, idDataBase);
 
         if (attachedOutPut != EnumsSqliteMemory.Output.SUCCESS)
@@ -51,6 +42,10 @@ public static partial class SqLiteLiteTools
             return attachedOutPut;
         }
 
+        if (!string.IsNullOrEmpty(path))
+        {
+            KeeperRegisterIdDataBase.Register(path, idDataBase);
+        }
         if (walMode)
         {
             var walOutput = ActivateWalMode(connection);
@@ -135,14 +130,14 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var reader = new StreamReader(Path.GetFullPath(pathCsvValues));
+            using var reader = SharedFile.OpenText(pathCsvValues);
             var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
                 Delimiter = ";",
             };
             
-            var csv = new CsvReader(reader, config);
+            using var csv = new CsvReader(reader, config);
             
             if (!csv.Read())
                 throw new InvalidDataException("Empty CSV file.");
@@ -155,10 +150,7 @@ public static partial class SqLiteLiteTools
                 throw new InvalidDataException("CSV file has no header row.");
             }
             
-            csv.Read();
             var values = new List<List<object>>();
-            var firstRow = fields.Select(field => NetTypeToSqLiteType.StrTryParse(csv.GetField(field))).Select(fieldValue => fieldValue.Item1).ToList();
-            values.Add(firstRow);
            
             while (csv.Read())
             {
@@ -171,7 +163,7 @@ public static partial class SqLiteLiteTools
          
            
             var noRows = values.Count;
-            var noColumns = values[0].Count;
+            var noColumns = fields.Length;
             var arrayValues = new object[noRows, noColumns];
             for (var i = 0; i < noRows; i++)
             {
@@ -181,10 +173,7 @@ public static partial class SqLiteLiteTools
                 }
             }
 
-            DropTable(db, idDataBase, idTable);
-            CreateTable(db, idDataBase, idTable, [.. fields], arrayValues);
-            
-            return EnumsSqliteMemory.Output.SUCCESS;
+            return CreateTable(db, idDataBase, idTable, [.. fields], noRows == 0 ? null : arrayValues);
         }
         catch (Exception ex)
         {
@@ -248,13 +237,13 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var reader = new StreamReader(Path.GetFullPath(pathCsvValues));
+            using var reader = SharedFile.OpenText(pathCsvValues);
             var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
                 Delimiter = delimiter
             };
-            var csv = new CsvReader(reader, config);
+            using var csv = new CsvReader(reader, config);
 
             csv.Read();
             csv.ReadHeader();
@@ -274,7 +263,7 @@ public static partial class SqLiteLiteTools
                 reader.Close();
                
                 var noRows = values.Count;
-                var noColumns = values[0].Count;
+                var noColumns = fieldsToInsert.Count;
                 var arrayValues = new object[noRows, noColumns];
                 for (var i = 0; i < noRows; i++)
                 {
@@ -339,9 +328,11 @@ public static partial class SqLiteLiteTools
             return new SqliteConnection("Data Source=:memory:;Cache=Shared");
         }
 
-        return File.Exists(path)
-            ? new SqliteConnection($"Data Source={path};Mode=Memory")
-            : new SqliteConnection("Data Source=:memory:");
+        return new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.GetFullPath(path),
+            Mode = SqliteOpenMode.ReadWriteCreate
+        }.ToString());
     }
 
     /// <summary>
@@ -351,33 +342,16 @@ public static partial class SqLiteLiteTools
     {
         try
         {
-            if (!string.IsNullOrEmpty(path)){
-                if (File.Exists(path))
-                {
-                    if (removeIfExist)
-                    {
-                        File.Delete(path);
-                    }
-
-                }
-                       
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = Path.GetFullPath(path);
+                if (removeIfExist && File.Exists(path))
+                    File.Delete(path);
                 var directory = Path.GetDirectoryName(path);
-                if (Directory.Exists(directory))
-                {
-                    if (!File.Exists(path))
-                    {
-                        File.Create(path).Close();
-                    }
-
-                }
-                else
-                {
-                    if (directory != null) Directory.CreateDirectory(directory);
-                    File.Create(path).Close();
-                }
-
+                if (!string.IsNullOrEmpty(directory))
+                    Directory.CreateDirectory(directory);
+                // Let the database engine initialize the file.
             }
-
             var strConnection = (string.IsNullOrEmpty(path) ? ":memory:" : path).Replace("'", "''");
             var attachedQry = string.IsNullOrEmpty(aliasDataBase)
                 ? $"ATTACH '{strConnection}'"
@@ -448,7 +422,7 @@ public static partial class SqLiteLiteTools
         if (string.IsNullOrWhiteSpace(sqlOrPath))
             throw new ArgumentException("SQL query or file path cannot be empty.", nameof(sqlOrPath));
 
-        return File.Exists(sqlOrPath) ? File.ReadAllText(sqlOrPath) : sqlOrPath;
+        return File.Exists(sqlOrPath) ? SharedFile.ReadAllText(sqlOrPath) : sqlOrPath;
     }
 
     /// <summary>
@@ -511,12 +485,7 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var fs = new FileStream(Path.GetFullPath(qryFilePath), FileMode.Open , FileAccess.Read, FileShare.ReadWrite);
-            StreamReader reader = new StreamReader(fs, Encoding.UTF8);
-            var qryToExecute = reader.ReadToEnd();
-                   
-            reader.Close();
-            fs.Close();
+            var qryToExecute = SharedFile.ReadAllText(qryFilePath);
                    
             if (parameters == null)
             {
@@ -553,12 +522,7 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var fs = new FileStream(Path.GetFullPath(qryFilePath), FileMode.Open , FileAccess.Read, FileShare.ReadWrite);
-            var reader = new StreamReader(fs, Encoding.UTF8);
-            var qry = reader.ReadToEnd();
-               
-            reader.Close();
-            fs.Close();
+            var qry = SharedFile.ReadAllText(qryFilePath);
 
             var result = parameters.Keys.Aggregate(qry, (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
             return (EnumsSqliteMemory.Output.SUCCESS, result);
@@ -587,12 +551,7 @@ public static partial class SqLiteLiteTools
 
         try
         {
-            var fs = new FileStream(Path.GetFullPath(qryFilePath), FileMode.Open , FileAccess.Read, FileShare.ReadWrite);
-            var reader = new StreamReader(fs, Encoding.UTF8);
-            var qryToExecute = reader.ReadToEnd();
-                   
-            reader.Close();
-            fs.Close();
+            var qryToExecute = SharedFile.ReadAllText(qryFilePath);
                    
             var result = parameters is null ? QueryExecutor.ExecuteQryReader(db, qryToExecute) 
                 : QueryExecutor.ExecuteQryReader(db, qryToExecute, parameters);
@@ -657,12 +616,7 @@ public static partial class SqLiteLiteTools
 
             try
             {
-                var fs = new FileStream(Path.GetFullPath(qryFilePath), FileMode.Open , FileAccess.Read, FileShare.ReadWrite);
-                var reader = new StreamReader(fs, Encoding.UTF8);
-                qryToExecute = reader.ReadToEnd();
-                   
-                reader.Close();
-                fs.Close();
+                qryToExecute = SharedFile.ReadAllText(qryFilePath);
             }
             catch (Exception ex)
             {
