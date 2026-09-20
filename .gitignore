@@ -30,3 +30,4 @@ MSBuild/LiteDB-Memory-Lib.sln.DotSettings.user
 /XLS-Memory-Tests/obj
 /XLS-Memory-Tests/bin
 /XLS-Memory-Tests/.idea
+/Artifacts/
