@@ -19,6 +19,7 @@ namespace SqliteDB_Memory_Lib
             object[,] values,
             string? extraEnd)
         {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
             var quotedTable =
                 $"{SqLiteLiteTools.QuoteIdentifier(idDataBase)}.{SqLiteLiteTools.QuoteIdentifier(idTable)}";
 
@@ -104,6 +105,7 @@ namespace SqliteDB_Memory_Lib
             List<string> headers,
             List<Type>? types = null)
         {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
 
             if (types is null && values is not null)
             {
@@ -143,6 +145,7 @@ namespace SqliteDB_Memory_Lib
         public static List<Dictionary<string, object>>? Select(SqliteConnection db, string idDataBase, string idTable,
                                                               string select, string where, string groupBy, string orderBy)
         {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
             var qry = $"SELECT {select} FROM {idDataBase}.{idTable} WHERE {where} GROUP BY {groupBy} ORDER BY {orderBy}";
 
             if (string.IsNullOrEmpty(where))
@@ -160,8 +163,8 @@ namespace SqliteDB_Memory_Lib
                 qry = qry.Replace("ORDER BY", "");
             }
 
-            var cmd = new SqliteCommand(qry, db);
-            var qryResult = cmd.ExecuteReader();
+            using var cmd = new SqliteCommand(qry, db);
+            using var qryResult = cmd.ExecuteReader();
             var resultList = new List<Dictionary<string, object>>();
 
             if (qryResult.HasRows)
@@ -186,7 +189,8 @@ namespace SqliteDB_Memory_Lib
         /// </summary>
         public static void ExecuteQryNotReader(SqliteConnection db, string qry)
         {
-            var cmd = new SqliteCommand(qry, db);
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
+            using var cmd = new SqliteCommand(qry, db);
             cmd.ExecuteNonQuery();
         }
 
@@ -195,9 +199,10 @@ namespace SqliteDB_Memory_Lib
         /// </summary>
         public static void ExecuteQryNotReader(SqliteConnection db, string qry, Dictionary<string, string> parameters)
         {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
             qry = parameters.Keys.Aggregate(qry, (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
 
-            var cmd = new SqliteCommand(qry, db);
+            using var cmd = new SqliteCommand(qry, db);
             cmd.ExecuteNonQuery();
         }
 
@@ -206,8 +211,9 @@ namespace SqliteDB_Memory_Lib
         /// </summary>
         public static List<Dictionary<string, object>> ExecuteQryReader(SqliteConnection db, string qry)
         {
-            var cmd = new SqliteCommand(qry, db);
-            var qryResult = cmd.ExecuteReader();
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
+            using var cmd = new SqliteCommand(qry, db);
+            using var qryResult = cmd.ExecuteReader();
 
             var resultList = new List<Dictionary<string, object>>();
 
@@ -230,6 +236,7 @@ namespace SqliteDB_Memory_Lib
         /// </summary>
         public static List<Dictionary<string, object>> ExecuteQryReader(SqliteConnection db, string qry, Dictionary<string, string> parameters)
         {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
             qry = parameters.Keys.Aggregate(qry, (current, param) => current.Replace(param, parameters[param], StringComparison.OrdinalIgnoreCase));
 
             return ExecuteQryReader(db, qry);

@@ -12,6 +12,12 @@ public sealed class ConnectionManager
         new(() => new ConnectionManager(), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private readonly object _syncRoot = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _operationGates = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Protects a complete synchronous operation against concurrent close/replacement.
+    /// Dispose on the acquiring thread; do not hold across await.</summary>
+    public IDisposable AcquireOperation(string alias) =>
+        new MemoryDb_Lib.Shared.OperationScope(_operationGates.GetOrAdd(alias ?? "", _ => new object()));
 
     private readonly Dictionary<string, LiteDatabase> _databases;
 
@@ -36,6 +42,7 @@ public sealed class ConnectionManager
     /// </summary>
     public LiteDatabase? GetDatabase(string alias, bool createIfMissing = true)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
 
         lock (_syncRoot)
@@ -55,6 +62,7 @@ public sealed class ConnectionManager
     public EnumsLiteDbMemory.Output CreateDatabase(string alias, string? path = null, bool substituteIfExist = false,
         bool isShared = false)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
 
         lock (_syncRoot)
@@ -106,6 +114,7 @@ public sealed class ConnectionManager
     /// </summary>
     public EnumsLiteDbMemory.Output Close(string alias, string? pathToKeep = null)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
 
         LiteDatabase? database;
@@ -130,6 +139,7 @@ public sealed class ConnectionManager
         {
             if (!string.IsNullOrEmpty(pathToKeep) && memoryStream is not null)
             {
+                database.Checkpoint();
                 memoryStream.Position = 0;
 
                 var directory = Path.GetDirectoryName(pathToKeep);
@@ -146,8 +156,8 @@ public sealed class ConnectionManager
         }
         finally
         {
-            memoryStream?.Dispose();
-            database?.Dispose();
+            try { database?.Dispose(); }
+            finally { memoryStream?.Dispose(); }
         }
     }
 
@@ -157,6 +167,7 @@ public sealed class ConnectionManager
     public EnumsLiteDbMemory.Output CreateCollection<T>(string alias, string collection, List<T>? documents = null,
         bool useInsertBulk = false) where T : new()
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(collection);
 
@@ -194,6 +205,7 @@ public sealed class ConnectionManager
     public EnumsLiteDbMemory.Output CreateCollection<T>(string alias, string collection, string path,
         bool useInsertBulk = false)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -234,6 +246,7 @@ public sealed class ConnectionManager
     /// </summary>
     public ILiteCollection<T>? GetCollection<T>(string alias, string collection)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(collection);
 
@@ -248,6 +261,7 @@ public sealed class ConnectionManager
     /// </summary>
     public List<string> GetCollectionNames(string alias)
     {
+        using var operationScope = AcquireOperation(alias);
         ArgumentException.ThrowIfNullOrWhiteSpace(alias);
 
         lock (_syncRoot)

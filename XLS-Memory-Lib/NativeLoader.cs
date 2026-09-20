@@ -1,4 +1,4 @@
-﻿using ExcelDna.Integration;
+using ExcelDna.Integration;
 
 namespace XLS_Memory_Lib;
 
@@ -9,6 +9,7 @@ public class AddIn : IExcelAddIn
     public void AutoOpen()
     {
         NativeLoader.Initialize();
+        DuckDb_Memory_Lib.DuckDbConfiguration.Initialize(Path.GetDirectoryName(ExcelDnaUtil.XllPath)!);
     }
 
     public void AutoClose()

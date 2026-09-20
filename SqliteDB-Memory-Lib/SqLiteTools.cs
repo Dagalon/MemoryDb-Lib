@@ -17,6 +17,7 @@ public static partial class SqLiteLiteTools
     public static SqliteOperationResult CreateDatabase(SqliteConnection connection, string? idDataBase, string? path,
         bool walMode = false)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(connection);
         var listDataBase = GetListDataBase(connection);
 
         if (listDataBase != null && idDataBase != null && listDataBase.Contains(idDataBase))
@@ -63,6 +64,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult CreateTable(SqliteConnection db, string idDataBase, string idTable, List<string> headers, object[,]? values)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -113,6 +115,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult CreateTable(SqliteConnection db, string idDataBase, string idTable, string pathCsvValues)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -292,6 +295,7 @@ public static partial class SqLiteLiteTools
     public static SqliteOperationResult Insert(SqliteConnection db, string idDataBase, string idTable, List<String> fields,
         object[,] values, string? extraEnd = null)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
 
         if (string.IsNullOrEmpty(idDataBase))
         {
@@ -315,6 +319,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static List<Dictionary<string, object>> Select(SqliteConnection db, string qry)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         return QueryExecutor.ExecuteQryReader(db, qry);
     }
 
@@ -340,6 +345,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult AttachedDataBase(SqliteConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         try
         {
             if (!string.IsNullOrEmpty(path))
@@ -382,9 +388,10 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult ActivateWalMode(SqliteConnection db)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         try
         {
-            var cmd = new SqliteCommand("PRAGMA journal_mode = 'wal'", db);
+            using var cmd = new SqliteCommand("PRAGMA journal_mode = 'wal'", db);
             cmd.ExecuteNonQuery();
             return EnumsSqliteMemory.Output.SUCCESS;
         }
@@ -400,6 +407,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static List<string>? GetListDataBase(SqliteConnection db)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
 
         using var cmd = new SqliteCommand("PRAGMA database_list", db);
         using var dataBases = cmd.ExecuteReader();
@@ -430,6 +438,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static (SqliteOperationResult Output, List<string>? Tables) GetListTables(SqliteConnection db, string idDataBase)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -473,6 +482,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult ExecuteQryNotReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(qryFilePath))
         {
             return EnumsSqliteMemory.Output.PATH_IS_NULL_OR_EMPTY;
@@ -539,6 +549,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static (SqliteOperationResult Output, List<Dictionary<string, object>>? Rows) ExecuteQryReader(SqliteConnection db, string qryFilePath, Dictionary<string, string>? parameters)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(qryFilePath))
         {
             return (EnumsSqliteMemory.Output.PATH_IS_NULL_OR_EMPTY, null);
@@ -570,6 +581,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult SaveDataBase(SqliteConnection db, string idDataBase, string idPathFile)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -643,6 +655,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static (SqliteOperationResult Output, string? Message) DropTable(SqliteConnection db, string idDataBase, string idTable)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -677,6 +690,7 @@ public static partial class SqLiteLiteTools
     /// </summary>
     public static SqliteOperationResult DeleteDataBase(SqliteConnection db, string idDatabase)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDatabase))
         {
             return EnumsSqliteMemory.Output.PATH_IS_NULL_OR_EMPTY;

@@ -6,9 +6,10 @@ public static class MemoryDbDuckDbExcelFunctions
 {
     private const string Category = "Memory DB - DuckDB";
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE_DB", Description = "Opens or creates a named DuckDB in-memory connection, optionally from a database file path.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE_DB", Description = "Opens or creates a named DuckDB in-memory connection, optionally from a database file path.", Category = Category, IsThreadSafe = true)]
     public static string Open(string name, string path)
     {
+        using var operationScope = Manager.AcquireOperation(name);
         try
         {
             var conn = Manager.GetConnection(name);
@@ -22,9 +23,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.ATTACH", Description = "Attaches a DuckDB database file or in-memory database to an existing connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.ATTACH", Description = "Attaches a DuckDB database file or in-memory database to an existing connection.", Category = Category, IsThreadSafe = true)]
     public static string Attach(string alias, string databaseId, string path = "", bool removeIfExist = false)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         try
         {
             var connection = Manager.GetConnection(alias);
@@ -36,9 +38,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.DATABASES", Description = "Lists attached DuckDB databases for a named connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.DATABASES", Description = "Lists attached DuckDB databases for a named connection.", Category = Category, IsThreadSafe = true)]
     public static object[,] Databases(string databaseId)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var names = DuckDb_Memory_Lib.DuckTools.GetListDataBase(Manager.GetConnection(databaseId)) ?? [];
@@ -50,9 +53,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.TABLES", Description = "Lists DuckDB tables in the selected attached database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.TABLES", Description = "Lists DuckDB tables in the selected attached database.", Category = Category, IsThreadSafe = true)]
     public static object[,] TablesList(string databaseId, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var (status, tables) = DuckDb_Memory_Lib.DuckTools.GetListTables(Manager.GetConnection(databaseId), string.IsNullOrWhiteSpace(databaseId) ? "main" : databaseId);
@@ -66,9 +70,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.TABLE", Description = "Creates a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.TABLE", Description = "Creates a DuckDB table from an Excel range. First row must contain headers.", Category = Category, IsThreadSafe = true)]
     public static string CreateTable(string databaseId, string table, object[,] range, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var output = Relational.RelationalCreateTable(table, range, databaseId, isDuckDb: true);
@@ -80,9 +85,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE", Description = "Creates or replaces a DuckDB table from a parquet file path.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CREATE.PARQUET.TABLE", Description = "Creates or replaces a DuckDB table from a parquet file path.", Category = Category, IsThreadSafe = true)]
     public static string CreateParquetTable(string databaseId, string table, string parquetPath, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var connection = Manager.GetConnection(databaseId);
@@ -100,9 +106,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.INSERT", Description = "Inserts rows into a DuckDB table from an Excel range. First row must contain headers.", Category = Category, IsThreadSafe = true)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
         try
         {
@@ -115,15 +122,16 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.EXECUTE", Description = "Executes a non-query SQL statement against a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.EXECUTE", Description = "Executes a non-query SQL statement against a named DuckDB connection.", Category = Category, IsThreadSafe = true)]
     public static string Execute(string databaseId, string sql, object dependency) => Relational.RelationalExecute(databaseId, sql, isDuckDb: true);
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.SCALAR", Description = "Executes a scalar SQL query against a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.SCALAR", Description = "Executes a scalar SQL query against a named DuckDB connection.", Category = Category, IsThreadSafe = true)]
     public static object Scalar(string databaseId, string sql, object dependency) => Relational.RelationalScalar(databaseId, sql, isDuckDb: true);
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.QUERY", Description = "Executes a DuckDB query or a SQL file and spills the result as a two-dimensional array.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.QUERY", Description = "Executes a DuckDB query or a SQL file and spills the result as a two-dimensional array.", Category = Category, IsThreadSafe = true)]
     public static object[,] Query(string databaseId, string sql, bool includeHeaders, object[,] parameters, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var sqlText = DuckDb_Memory_Lib.DuckTools.ResolveSql(sql);
@@ -135,9 +143,10 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.DROP.TABLE", Description = "Drops a DuckDB table from the selected attached database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.DROP.TABLE", Description = "Drops a DuckDB table from the selected attached database.", Category = Category, IsThreadSafe = true)]
     public static string? DropTable(string databaseId, string table)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var (status, msg) = DuckDb_Memory_Lib.DuckTools.DropTable(Manager.GetConnection(databaseId), databaseId, table);
@@ -154,14 +163,15 @@ public static class MemoryDbDuckDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE", Description = "Closes a named DuckDB connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE", Description = "Closes a named DuckDB connection.", Category = Category, IsThreadSafe = true)]
     public static string Close(string databaseId)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         Manager.CloseConnection(databaseId);
         return ExcelOutput.Success;
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE.ALL", Description = "Closes all DuckDB connections.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.DUCKDB.CLOSE.ALL", Description = "Closes all DuckDB connections.", Category = Category, IsThreadSafe = true)]
     public static string CloseAll()
     {
         Manager.CloseAllConnections();

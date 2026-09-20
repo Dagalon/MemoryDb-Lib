@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using LiteDB;
 
 namespace LiteDb_Memory_Lib;
@@ -11,6 +11,7 @@ public static class LiteDbTools
     public static EnumsLiteDbMemory.Output CreateIndex<T>(ConnectionManager manager, string alias, string collectionName,
         BsonExpression expression, bool unique = false)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
 
         if (collection == null)
@@ -27,6 +28,7 @@ public static class LiteDbTools
     /// </summary>
     public static EnumsLiteDbMemory.Output Delete<T>(ConnectionManager manager, string alias, string collectionName, string idDocument)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
         if (collection == null)
         {
@@ -42,6 +44,7 @@ public static class LiteDbTools
     /// </summary>
     public static EnumsLiteDbMemory.Output Update<T>(ConnectionManager manager, string alias, string collectionName, T document)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
         if (collection == null)
         {
@@ -58,6 +61,7 @@ public static class LiteDbTools
     /// </summary>
     public static EnumsLiteDbMemory.Output UpdateMany<T>(ConnectionManager manager, string alias, string collectionName, List<T> documents)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
         if (collection == null)
         {
@@ -74,6 +78,7 @@ public static class LiteDbTools
     /// </summary>
     public static EnumsLiteDbMemory.Output DeleteMany<T>(ConnectionManager manager, string alias, string collectionName, BsonExpression qry)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
 
         if (collection == null)
@@ -90,6 +95,7 @@ public static class LiteDbTools
     /// </summary>
     public static EnumsLiteDbMemory.Output DeleteMany<T>(ConnectionManager manager, string alias, string collectionName, Expression<Func<T, bool>> predicate)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
 
         if (collection == null)
@@ -107,6 +113,7 @@ public static class LiteDbTools
     public static EnumsLiteDbMemory.Output CreateIndex<T, TOutput>(ConnectionManager manager, string alias, string collectionName,
         Expression<Func<T, TOutput>> expression, bool unique = false)
     {
+        using var operationScope = manager.AcquireOperation(alias);
         var collection = manager.GetCollection<T>(alias, collectionName);
 
         if (collection == null)
@@ -123,7 +130,8 @@ public static class LiteDbTools
     /// </summary>
     public static List<T>? Execute<T>(ConnectionManager manager, string alias, string qry)
     {
-        var results = manager.GetDatabase(alias, createIfMissing: false)?.Execute(qry);
+        using var operationScope = manager.AcquireOperation(alias);
+        using var results = manager.GetDatabase(alias, createIfMissing: false)?.Execute(qry);
         return results != null ? BsonDataReaderToObject<T>(results) : null;
     }
 

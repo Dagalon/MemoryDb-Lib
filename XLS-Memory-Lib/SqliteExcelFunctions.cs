@@ -6,9 +6,10 @@ public static class MemoryDbSqliteExcelFunctions
 {
     private const string Category = "Memory DB - SQLite";
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE_DB", Description = "Opens or creates a named SQLite in-memory connection, optionally from a database file path.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE_DB", Description = "Opens or creates a named SQLite in-memory connection, optionally from a database file path.", Category = Category, IsThreadSafe = true)]
     public static string Open(string name, string path)
     {
+        using var operationScope = Manager.AcquireOperation(name);
         try
         {
             var conn =  Manager.GetConnection(name);
@@ -23,9 +24,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.ATTACH", Description = "Attaches a SQLite database file or in-memory database to an existing connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.ATTACH", Description = "Attaches a SQLite database file or in-memory database to an existing connection.", Category = Category, IsThreadSafe = true)]
     public static string Attach(string alias, string databaseId, string path = "", bool removeIfExist = false)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         try
         {
             var connection = Manager.GetConnection(alias);
@@ -37,9 +39,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.DATABASES", Description = "Lists attached SQLite databases for a named connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.DATABASES", Description = "Lists attached SQLite databases for a named connection.", Category = Category, IsThreadSafe = true)]
     public static object[,] Databases(string databaseId)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var names = SqliteDB_Memory_Lib.SqLiteLiteTools.GetListDataBase(Manager.GetConnection(databaseId)) ?? [];
@@ -51,9 +54,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.TABLES", Description = "Lists SQLite tables in the selected attached database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.TABLES", Description = "Lists SQLite tables in the selected attached database.", Category = Category, IsThreadSafe = true)]
     public static object[,] TablesList(string databaseId, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var (status, tables) = SqliteDB_Memory_Lib.SqLiteLiteTools.GetListTables(Manager.GetConnection(databaseId), string.IsNullOrWhiteSpace(databaseId) ? "main" : databaseId);
@@ -67,9 +71,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE.TABLE", Description = "Creates a SQLite table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CREATE.TABLE", Description = "Creates a SQLite table from an Excel range. First row must contain headers.", Category = Category, IsThreadSafe = true)]
     public static string CreateTable(string databaseId, string table, object[,] range, string path, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             if (string.IsNullOrEmpty(path)) 
@@ -90,9 +95,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
     
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.INSERT", Description = "Inserts rows into a SQLite table from an Excel range. First row must contain headers.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.INSERT", Description = "Inserts rows into a SQLite table from an Excel range. First row must contain headers.", Category = Category, IsThreadSafe = true)]
     public static string Insert(string databaseId, string table, object[,] range, object dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
         try
         {
@@ -106,9 +112,10 @@ public static class MemoryDbSqliteExcelFunctions
     }
 
     [ExcelFunction(Name = "MEMORY_DB.SQLITE.EXECUTE",
-        Description = "Executes a non-query SQL statement against a named SQLite connection.", Category = Category)]
+        Description = "Executes a non-query SQL statement against a named SQLite connection.", Category = Category, IsThreadSafe = true)]
     public static string Execute(string databaseId, string sql, object[,]? parameters, object? dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
 
         try
         {
@@ -123,15 +130,16 @@ public static class MemoryDbSqliteExcelFunctions
         
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.SCALAR", Description = "Executes a scalar SQL query against a named SQLite connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.SCALAR", Description = "Executes a scalar SQL query against a named SQLite connection.", Category = Category, IsThreadSafe = true)]
     public static object Scalar(string databaseId, string sql, object dependency) => Relational.RelationalScalar(databaseId, sql, isDuckDb: false);
 
     [ExcelFunction(
         Name = "MEMORY_DB.SQLITE.QUERY",
         Description = "Executes a SQLite query or a SQL file and spills the result as a two-dimensional array.",
-        Category = Category)]
+        Category = Category, IsThreadSafe = true)]
     public static object[,] Query(string databaseId,  string sql,  bool includeHeaders, object[,]? parameters, object? dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var sqlText = SqliteDB_Memory_Lib.SqLiteLiteTools.ResolveSql(sql);
@@ -149,9 +157,10 @@ public static class MemoryDbSqliteExcelFunctions
     [ExcelFunction(
         Name = "MEMORY_DB.SQLITE.QUERY_TO_CSV",
         Description = "Executes a SQLite query or a SQL file and spills the result to csv file.",
-        Category = Category)]
+        Category = Category, IsThreadSafe = true)]
     public static object QueryToCsv(string databaseId, string sql, bool includeHeaders, object[,]? parameters, string pathToSave, object? dependency)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var sqlText = SqliteDB_Memory_Lib.SqLiteLiteTools.ResolveSql(sql); 
@@ -169,9 +178,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.DROP.TABLE", Description = "Drops a SQLite table from the selected attached database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.DROP.TABLE", Description = "Drops a SQLite table from the selected attached database.", Category = Category, IsThreadSafe = true)]
     public static string? DropTable(string databaseId, string table)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             var (status, msg) = SqliteDB_Memory_Lib.SqLiteLiteTools.DropTable(Manager.GetConnection(databaseId), databaseId, table);
@@ -189,9 +199,10 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.SAVE", Description = "Saves an attached SQLite database to a file.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.SAVE", Description = "Saves an attached SQLite database to a file.", Category = Category, IsThreadSafe = true)]
     public static string Save(string databaseId, string path)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         try
         {
             return ExcelOutput.FromStatus(SqliteDB_Memory_Lib.SqLiteLiteTools.SaveDataBase(Manager.GetConnection(databaseId), databaseId, path));
@@ -202,14 +213,15 @@ public static class MemoryDbSqliteExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CLOSE", Description = "Closes a named SQLite connection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CLOSE", Description = "Closes a named SQLite connection.", Category = Category, IsThreadSafe = true)]
     public static string Close(string databaseId)
     {
+        using var operationScope = Manager.AcquireOperation(databaseId);
         Manager.CloseConnection(databaseId);
         return ExcelOutput.Success;
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CLOSE.ALL", Description = "Closes all SQLite connections.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.SQLITE.CLOSE.ALL", Description = "Closes all SQLite connections.", Category = Category, IsThreadSafe = true)]
     public static string CloseAll()
     {
         Manager.CloseAllConnections();

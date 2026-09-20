@@ -13,6 +13,7 @@ public static class QueryExecutor
     public static EnumsDuckMemory.Output CreateTable(DuckDBConnection db, string idDataBase, string idTable,
         List<string> headers, List<Type>? types = null)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
 
         var fieldsDefinition = new List<string>();
         var noFields = headers.Count;
@@ -57,6 +58,7 @@ public static class QueryExecutor
     /// </summary>
     public static EnumsDuckMemory.Output CreateParquetTable(DuckDBConnection db, string idDataBase, string idTable, string parquetPathFile)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrWhiteSpace(parquetPathFile))
         {
             return EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY;
@@ -89,6 +91,7 @@ public static class QueryExecutor
     /// </summary>
     public static (EnumsDuckMemory.Output, List<Dictionary<string, object>>) ExecuteQryReader(DuckDBConnection db, string qry)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         try
         {
             using var cmd = new DuckDBCommand(qry, db);
@@ -119,6 +122,7 @@ public static class QueryExecutor
     /// </summary>
     public static (EnumsDuckMemory.Output, List<Dictionary<string, object>>) ExecuteQryReader(DuckDBConnection db, string qry, Dictionary<string, string> parameters)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         try
         {
             using var cmd = new DuckDBCommand(qry, db);

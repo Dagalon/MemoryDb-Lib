@@ -45,7 +45,7 @@ public sealed class ConnectionManager : ConnectionManagerBase<SqliteConnection>
 
     public sealed class KeeperRegisterIdDataBase
     {
-        private static readonly Dictionary<string, string> _mapIdDataBase = new Dictionary<string, string>();
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _mapIdDataBase = new(StringComparer.OrdinalIgnoreCase);
 
         private KeeperRegisterIdDataBase() { }
 
@@ -54,13 +54,7 @@ public sealed class ConnectionManager : ConnectionManagerBase<SqliteConnection>
         /// </summary>
         public static string GetIdDataBase(string path)
         {
-            string idDataBase = "";
-            if (_mapIdDataBase.ContainsKey(path))
-            {
-                idDataBase = _mapIdDataBase[path];
-            }
-
-            return idDataBase;
+            return _mapIdDataBase.TryGetValue(path, out var idDataBase) ? idDataBase : "";
         }
 
         /// <summary>
@@ -76,7 +70,7 @@ public sealed class ConnectionManager : ConnectionManagerBase<SqliteConnection>
         /// </summary>
         public static bool CheckIdDataBase(string idDb)
         {
-            return _mapIdDataBase.ContainsValue(idDb);
+            return _mapIdDataBase.Values.Contains(idDb, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -84,10 +78,7 @@ public sealed class ConnectionManager : ConnectionManagerBase<SqliteConnection>
         /// </summary>
         public static void Register(string path, string idDataBase)
         {
-            if (!CheckPathDataBase(path))
-            {
-                _mapIdDataBase[path] = idDataBase;
-            }
+            _mapIdDataBase.TryAdd(path, idDataBase);
         }
 
         /// <summary>
@@ -95,12 +86,11 @@ public sealed class ConnectionManager : ConnectionManagerBase<SqliteConnection>
         /// </summary>
         public static void DeleteRegister(string idDataBase)
         {
-            var keepIdDataBases = _mapIdDataBase.Values.ToList();
-            int indexValues = keepIdDataBases.IndexOf(idDataBase);
-            string pathIdDataBase = _mapIdDataBase.Keys.ToList()[indexValues];
-
-            _mapIdDataBase.Remove(pathIdDataBase);
-
+            foreach (var entry in _mapIdDataBase)
+            {
+                if (string.Equals(entry.Value, idDataBase, StringComparison.OrdinalIgnoreCase))
+                    ((ICollection<KeyValuePair<string, string>>)_mapIdDataBase).Remove(entry);
+            }
         }
 }
 

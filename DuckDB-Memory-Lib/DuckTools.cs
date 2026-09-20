@@ -13,15 +13,18 @@ public static class DuckTools
     /// </summary>
     public static DuckDBConnection GetInstance(string? path)
     {
-        if (string.IsNullOrEmpty(path))
+        var configuration = DuckDbConfiguration.Current;
+        var temporaryDirectory = Path.Combine(configuration.TempPath!, "duckdb-temp", Guid.NewGuid().ToString("N"));
+        var connection = new DuckDBConnection(new DuckDBConnectionStringBuilder
         {
-            return new DuckDBConnection("Data Source=:memory:");
-        }
-
-        return new DuckDBConnection(new DuckDBConnectionStringBuilder
-        {
-            DataSource = Path.GetFullPath(path)
+            DataSource = string.IsNullOrEmpty(path) ? ":memory:" : Path.GetFullPath(path)
         }.ToString());
+        connection.StateChange += (_, args) =>
+        {
+            if (args.CurrentState == System.Data.ConnectionState.Open)
+                configuration.Apply(connection, temporaryDirectory);
+        };
+        return connection;
     }
     
     /// <summary>
@@ -29,6 +32,7 @@ public static class DuckTools
     /// </summary>
     public static DuckOperationResult CreateDatabase(DuckDBConnection connection, string? idDataBase, string? path)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(connection);
         var listDataBase = GetListDataBase(connection);
 
         if (listDataBase != null && idDataBase != null && listDataBase.Contains(idDataBase))
@@ -98,9 +102,10 @@ public static class DuckTools
     /// </summary>
     public static List<string>? GetListDataBase(DuckDBConnection db)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
 
-        var cmd = new DuckDBCommand("PRAGMA database_list", db);
-        var dataBases = cmd.ExecuteReader();
+        using var cmd = new DuckDBCommand("PRAGMA database_list", db);
+        using var dataBases = cmd.ExecuteReader();
         List<string> idList = [];
 
         while (dataBases.Read())
@@ -122,6 +127,7 @@ public static class DuckTools
         string idFunction,
         Action<IReadOnlyList<IDuckDBDataReader>, IDuckDBDataWriter, ulong> func)
     {
+            using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         db.RegisterScalarFunction<TInput, TOutput>(
             idFunction,
             func);
@@ -135,6 +141,7 @@ public static class DuckTools
     /// </summary>
     public static DuckOperationResult AttachedDataBase(DuckDBConnection db, string? path, string? aliasDataBase, bool removeIfExist=false)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         try
         {
             if (!string.IsNullOrEmpty(path))
@@ -160,7 +167,7 @@ public static class DuckTools
 
             try
             {
-                var cmd = new DuckDBCommand(attachedQry, db);
+                using var cmd = new DuckDBCommand(attachedQry, db);
                 cmd.ExecuteNonQuery();
             }
             catch (DuckDBException ex)
@@ -183,6 +190,7 @@ public static class DuckTools
     /// </summary>
     public static (DuckOperationResult Output, List<string>? Tables) GetListTables(DuckDBConnection db, string idDataBase)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         var dataBases = GetListDataBase(db);
 
         if (dataBases == null || !dataBases.Contains(idDataBase))
@@ -194,7 +202,7 @@ public static class DuckTools
         {
             List<string>? tables = [];
             var qry = $"SELECT table_name FROM information_schema.tables WHERE table_catalog = '{idDataBase.Replace("'", "''")}' AND table_type = 'BASE TABLE';";
-            var cmd = new DuckDBCommand(qry, db);
+            using var cmd = new DuckDBCommand(qry, db);
             var qryReader = cmd.ExecuteReader();
 
             while (qryReader.Read())
@@ -222,6 +230,7 @@ public static class DuckTools
     /// </summary>
     public static (DuckOperationResult Output, string? Message) DropTable(DuckDBConnection db, string idDataBase, string idTable)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDataBase))
         {
             idDataBase = "main";
@@ -240,7 +249,7 @@ public static class DuckTools
         try
         {
             var qry = $"DROP TABLE {QuoteIdentifier(idDataBase)}.{QuoteIdentifier(idTable)}";
-            var cmd = new DuckDBCommand(qry, db);
+            using var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
             return (EnumsDuckMemory.Output.SUCCESS, "");
         }
@@ -256,6 +265,7 @@ public static class DuckTools
     /// </summary>
     public static DuckOperationResult DeleteDataBase(DuckDBConnection db, string idDatabase)
     {
+        using var operationScope = new MemoryDb_Lib.Shared.OperationScope(db);
         if (string.IsNullOrEmpty(idDatabase))
         {
             return EnumsDuckMemory.Output.PATH_IS_NULL_OR_EMPTY;
@@ -264,7 +274,7 @@ public static class DuckTools
         try
         {
             var qry = $"DETACH DATABASE {QuoteIdentifier(idDatabase)}";
-            var cmd = new DuckDBCommand(qry, db);
+            using var cmd = new DuckDBCommand(qry, db);
             cmd.ExecuteNonQuery();
             return EnumsDuckMemory.Output.SUCCESS;
         }

@@ -40,6 +40,41 @@ Both LiteDB upload overloads use the collection/chunk naming and file identifier
 
 Regression tests cover shared CSV/JSON/SQL/Parquet reads, both disk upload paths, exclusive-lock errors, failed-attach retries, database creation/reopening, Excel wrappers and SQLite WAL reads.
 
+## DuckDB paths and multithreading
+
+Place an optional `memory-db.json` next to the `.xll` add-in:
+
+```json
+{
+  "temp_path": "duckdb-data/temp",
+  "extension_path": "duckdb-data/extensions"
+}
+```
+
+Both keys are optional. Missing, null or blank values use the add-in directory. Relative paths resolve against that directory, not Excel's current working directory. Without the JSON file, both paths default to the add-in directory. The library creates missing directories; invalid JSON or inaccessible paths surface as errors. Outside Excel the default base is `AppContext.BaseDirectory`; call `DuckDbConfiguration.Initialize(baseDirectory, optionalJsonFile)` before creating connections to override it.
+
+`extension_path` maps to DuckDB's `extension_directory`. `temp_path` is the root for `duckdb-temp/<connection-id>` directories, used as `temp_directory` so independent databases do not overwrite each other's spill files. Empty temporary directories may remain after close. Settings are captured when a connection is created; reopen the named connection to apply configuration changes. Database file paths remain independent of these two settings. See [DuckDB configuration](https://duckdb.org/docs/current/configuration/overview).
+
+DuckDB, SQLite and LiteDB helpers support calls from multiple threads. Complete operations on the same connection/alias are serialized, including reads, writes, replacement and close; different aliases can execute concurrently. Excel database functions declare `IsThreadSafe = true`. This does not impose calculation order: use Excel dependency arguments/cell references to ensure creation or insertion finishes before a dependent query. Native engine transaction/file-locking rules still apply, including separate aliases pointing at the same database file.
+
+For direct access to a returned connection, LiteDB database, collection or stored-file handle, keep its entire use inside the manager's synchronous `AcquireOperation(alias)` scope. For raw DuckDB/SQLite commands also lock the connection to coordinate with connection-based helpers:
+
+```csharp
+var manager = DuckDb_Memory_Lib.ConnectionManager.GetInstance();
+using (manager.AcquireOperation("analytics"))
+{
+    var connection = manager.GetConnection("analytics");
+    lock (connection)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT 42";
+        var value = command.ExecuteScalar();
+    }
+}
+```
+
+Dispose scopes and readers on the acquiring thread. Do not hold scopes across `await`, acquire other aliases inside them, or retain raw handles past close/replacement. For a caller-owned connection, coordinate disposal with its callers. `CloseAllConnections` closes a snapshot of registered aliases and waits for their active operations; concurrently added aliases are outside that snapshot. Helpers returning materialized lists finish reading before releasing their scope.
+
 ## Why use these libraries?
 
 Creating an in-memory database for a single test is straightforward, but making it repeatable, discoverable, and safe across an entire test suite is not. These libraries encapsulate the boilerplate so you can:

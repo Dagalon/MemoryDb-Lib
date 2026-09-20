@@ -8,6 +8,9 @@ internal static class Relational
 {
     internal static string RelationalCreateTable(string table, object[,] range, string databaseId, bool isDuckDb)
 {
+    using var operationScope = isDuckDb
+        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(databaseId)
+        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(databaseId);
     if (!Tables.TryRangeToHeadersAndValues(range, out var headers, out var values, out var error)) return ExcelOutput.Error(error);
 
     try
@@ -30,6 +33,9 @@ internal static class Relational
 
 internal static string RelationalExecute(string alias, string sql, bool isDuckDb, object[,]? parameters = null)
 {
+    using var operationScope = isDuckDb
+        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias)
+        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias);
     if (string.IsNullOrWhiteSpace(sql)) return ExcelOutput.Error("sql is required");
 
     try
@@ -46,11 +52,17 @@ internal static string RelationalExecute(string alias, string sql, bool isDuckDb
 
     internal static object RelationalScalar(string alias, string sql, bool isDuckDb)
 {
+    using var operationScope = isDuckDb
+        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias)
+        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias);
     if (string.IsNullOrWhiteSpace(sql)) return ExcelOutput.Error("sql is required");
 
     try
     {
-        using var command = CreateCommand(alias, sql, isDuckDb);
+        var connection = GetConnection(alias, isDuckDb);
+        using var connectionScope = new MemoryDb_Lib.Shared.OperationScope(connection);
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
         return command.ExecuteScalar() ?? ExcelEmpty.Value;
     }
     catch (Exception ex)
@@ -61,11 +73,17 @@ internal static string RelationalExecute(string alias, string sql, bool isDuckDb
 
 internal static object[,] RelationalQuery(string alias, string sql, bool includeHeaders, bool isDuckDb, object[,]? parameters = null)
 {
+    using var operationScope = isDuckDb
+        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias)
+        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias);
     if (string.IsNullOrWhiteSpace(sql)) return Tables.ErrorTable("sql is required");
 
     try
     {
-        using var command = CreateCommand(alias, sql, isDuckDb);
+        var connection = GetConnection(alias, isDuckDb);
+        using var connectionScope = new MemoryDb_Lib.Shared.OperationScope(connection);
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
 
         if (parameters is not null  &&  parameters[0, 0] is not ExcelMissing)
         {
@@ -108,6 +126,9 @@ internal static void AddParameters(DbCommand command, object[,]? parameters, boo
 
 internal static void RelationalInsertRows(string table, List<string> headers, object[,] values, string databaseId, bool isDuckDb)
 {
+    using var operationScope = isDuckDb
+        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(databaseId)
+        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(databaseId);
         if (!isDuckDb) throw new InvalidOperationException("Use the SQLite helper for SQLite inserts.");
 
         var qualifiedTable = Qualify(databaseId, table);
@@ -129,7 +150,11 @@ internal static void RelationalInsertRows(string table, List<string> headers, ob
 
 internal static int ExecuteSqlite(string alias, string sql, object[,]? parameters = null)
 {
-    using var command = CreateCommand(alias, sql, isDuckDb: false);
+    using var operationScope = SqliteDB_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias);
+    var connection = GetConnection(alias, isDuckDb: false);
+    using var connectionScope = new MemoryDb_Lib.Shared.OperationScope(connection);
+    using var command = connection.CreateCommand();
+    command.CommandText = sql;
 
     if (parameters is not null && parameters[0, 0] is not ExcelMissing)
     {
@@ -141,7 +166,11 @@ internal static int ExecuteSqlite(string alias, string sql, object[,]? parameter
 
 internal static int ExecuteDuck(string alias, string sql, object[,]? parameters = null)
 {
-    using var command = CreateCommand(alias, sql, isDuckDb: true);
+    using var operationScope = DuckDb_Memory_Lib.ConnectionManager.GetInstance().AcquireOperation(alias);
+    var connection = GetConnection(alias, isDuckDb: true);
+    using var connectionScope = new MemoryDb_Lib.Shared.OperationScope(connection);
+    using var command = connection.CreateCommand();
+    command.CommandText = sql;
 
 
     if (parameters is not null && parameters[0, 0] is not ExcelMissing)
@@ -152,14 +181,9 @@ internal static int ExecuteDuck(string alias, string sql, object[,]? parameters 
     return command.ExecuteNonQuery();
 }
 
-internal static DbCommand CreateCommand(string alias, string sql, bool isDuckDb)
-{
-    DbCommand command = isDuckDb
-        ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().GetConnection(alias).CreateCommand()
-        : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().GetConnection(alias).CreateCommand();
-    command.CommandText = sql;
-    return command;
-}
+private static DbConnection GetConnection(string alias, bool isDuckDb) => isDuckDb
+    ? DuckDb_Memory_Lib.ConnectionManager.GetInstance().GetConnection(alias)
+    : SqliteDB_Memory_Lib.ConnectionManager.GetInstance().GetConnection(alias);
 
 internal static string BuildCreateTableSql(string databaseId, string table, List<string> headers, object[,] values)
 {

@@ -7,31 +7,35 @@ public static class MemoryDbLiteDbExcelFunctions
 {
     private const string Category = "Memory DB - LiteDB";
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CREATE", Description = "Creates or replaces a named in-memory LiteDB database, or opens a file-backed database when path is provided.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CREATE", Description = "Creates or replaces a named in-memory LiteDB database, or opens a file-backed database when path is provided.", Category = Category, IsThreadSafe = true)]
     public static string Create(string alias, string path = "", bool replaceExisting = true, bool shared = false)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
         return ExcelOutput.FromStatus(Manager.CreateDatabase(alias, NullIfBlank(path), replaceExisting, shared));
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CLOSE", Description = "Closes a named LiteDB database and optionally persists it to disk.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.CLOSE", Description = "Closes a named LiteDB database and optionally persists it to disk.", Category = Category, IsThreadSafe = true)]
     public static string Close(string alias, string pathToKeep = "")
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
         return ExcelOutput.FromStatus(Manager.Close(alias, NullIfBlank(pathToKeep)));
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.COLLECTIONS", Description = "Lists the collections registered in a LiteDB database.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.COLLECTIONS", Description = "Lists the collections registered in a LiteDB database.", Category = Category, IsThreadSafe = true)]
     public static object[,] Collections(string alias)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return Tables.ErrorTable("alias is required");
         var names = Manager.GetCollectionNames(alias);
         return Tables.Vector("Collection", names.Cast<object>());
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.INSERT.JSON", Description = "Inserts one JSON document into a LiteDB collection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.INSERT.JSON", Description = "Inserts one JSON document into a LiteDB collection.", Category = Category, IsThreadSafe = true)]
     public static string InsertJson(string alias, string collection, string jsonDocument)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
         if (string.IsNullOrWhiteSpace(collection)) return ExcelOutput.Error("collection is required");
         if (string.IsNullOrWhiteSpace(jsonDocument)) return ExcelOutput.Error("jsonDocument is required");
@@ -52,9 +56,10 @@ public static class MemoryDbLiteDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.FINDALL.JSON", Description = "Returns all LiteDB collection documents as JSON text.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.FINDALL.JSON", Description = "Returns all LiteDB collection documents as JSON text.", Category = Category, IsThreadSafe = true)]
     public static object[,] FindAllJson(string alias, string collection)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return Tables.ErrorTable("alias is required");
         if (string.IsNullOrWhiteSpace(collection)) return Tables.ErrorTable("collection is required");
 
@@ -75,9 +80,10 @@ public static class MemoryDbLiteDbExcelFunctions
         }
     }
 
-    [ExcelFunction(Name = "MEMORY_DB.LITEDB.DELETE", Description = "Deletes one LiteDB document by id from a collection.", Category = Category)]
+    [ExcelFunction(Name = "MEMORY_DB.LITEDB.DELETE", Description = "Deletes one LiteDB document by id from a collection.", Category = Category, IsThreadSafe = true)]
     public static string Delete(string alias, string collection, string id)
     {
+        using var operationScope = Manager.AcquireOperation(alias);
         if (string.IsNullOrWhiteSpace(alias)) return ExcelOutput.Error("alias is required");
         if (string.IsNullOrWhiteSpace(collection)) return ExcelOutput.Error("collection is required");
         if (string.IsNullOrWhiteSpace(id)) return ExcelOutput.Error("id is required");

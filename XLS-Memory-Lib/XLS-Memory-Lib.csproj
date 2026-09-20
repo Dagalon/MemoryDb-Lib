@@ -71,4 +71,5 @@
                 Condition="'@(NativeDlls)' != ''" />
     </Target>
     
+<ItemGroup><Compile Include="..\Shared\OperationScope.cs" Link="Shared\OperationScope.cs" /></ItemGroup>
 </Project>

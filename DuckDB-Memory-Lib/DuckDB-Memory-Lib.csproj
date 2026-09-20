@@ -17,4 +17,5 @@
     <ItemGroup>
       <Compile Include="..\Shared\SharedFile.cs" Link="Shared\SharedFile.cs" />
     </ItemGroup>
+    <ItemGroup><Compile Include="..\Shared\OperationScope.cs" Link="Shared\OperationScope.cs" /></ItemGroup>
 </Project>
