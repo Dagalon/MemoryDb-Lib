@@ -211,11 +211,11 @@ SQLite and DuckDB connection factories open or create the supplied database path
 # Aggregate NuGet package
 dotnet pack Memory-Db/Memory-Db.csproj -c Release -o Artifacts
 
-# Existing convenience script: restore, pack, build and collect XLL/DNA files
+# Restore, pack, build and deploy the complete packed add-in with native DLLs
 ./scripts/deploy.ps1 -Configuration Release -ArtifactsDir Artifacts
 ```
 
-The script produces `Artifacts/Memory.DB.<version>.nupkg` and copies `.xll` / `.dna` files into `Artifacts/addin`. Its collection step currently flattens those files and does not copy the complete `publish/native` directory or optional JSON configuration. For a deployment requiring that layout, distribute the complete publish folder and the configuration file. `scripts/deploy.sh` implements the analogous Bash sequence; its presence does not establish support for building the Windows Excel add-in on Linux or macOS.
+The script produces `Artifacts/Memory.DB.<version>.nupkg` and copies the complete packed `publish` directory into `Artifacts/addin`, preserving subdirectories. It requires a nonempty `XLS-Memory-Lib.xll`, `native/x64/e_sqlite3.dll` and `native/x64/duckdb.dll`, and verifies that deployed copies match the publish output. Build failures stop deployment. Any optional `memory-db.json` already present in `publish` is copied too; otherwise place it beside the deployed `.xll`. Distribute the entire `Artifacts/addin` directory, not only the `.xll`. `scripts/deploy.sh` implements the analogous Bash sequence; its presence does not establish support for building the Windows Excel add-in on Linux or macOS.
 
 `Memory.DB` references the three engine projects. Normal packing records those project dependencies; it is not a single package bundling all engine assemblies. A consumer feed must provide the referenced packages as well.
 

@@ -91,6 +91,12 @@ jobs:
           $files = Get-ChildItem -Path Artifacts/addin -Recurse -Include *.xll,*.dna
           if (-not $files) { throw "No Excel add-in files were generated in Artifacts/addin." }
           $files | Format-Table FullName, Length
+          foreach ($required in @('XLS-Memory-Lib.xll', 'native/x64/e_sqlite3.dll', 'native/x64/duckdb.dll')) {
+            $path = Join-Path 'Artifacts/addin' $required
+            if (!(Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) {
+              throw "Missing or empty add-in artifact: $path"
+            }
+          }
 
       - name: Upload Excel add-in
         uses: actions/upload-artifact@v7
