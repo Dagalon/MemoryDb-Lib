@@ -1,6 +1,6 @@
+using DuckDB.NET.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DuckDB.NET.Data;
 
 namespace DuckDb_Memory_Lib;
 
@@ -8,42 +8,73 @@ namespace DuckDb_Memory_Lib;
 public sealed class DuckDbConfiguration
 {
     public const string FileName = "memory-db.json";
-    private static DuckDbConfiguration _current = Load(AppContext.BaseDirectory);
+    private static DuckDbConfiguration _current = new()
+    {
+        TempPath = Path.Combine(AppContext.BaseDirectory, "temp"),
+        ExtensionPath = Path.Combine(AppContext.BaseDirectory, "extensions")
+    };
 
     [JsonPropertyName("temp_path")]
-    public string? TempPath { get; init; }
+    public string? TempPath { get; init; } = Path.Combine(AppContext.BaseDirectory, "temp");
+
 
     [JsonPropertyName("extension_path")]
-    public string? ExtensionPath { get; init; }
+    public string? ExtensionPath { get; init; } = Path.Combine(AppContext.BaseDirectory, "extensions");
+ 
+
 
     public static DuckDbConfiguration Current => Volatile.Read(ref _current);
 
     /// <summary>Loads the optional JSON file relative to the add-in directory.</summary>
     public static void Initialize(string addInDirectory, string? configurationFile = null)
     {
-        var configuration = Load(addInDirectory, configurationFile);
+        if (string.IsNullOrWhiteSpace(addInDirectory))
+        {
+            throw new ArgumentException("The add-in folder must not be empty.", nameof(addInDirectory));
+        }
+      
+        var configuration = Load(addInDirectory: addInDirectory, configurationFile: configurationFile);
         Volatile.Write(ref _current, configuration);
+      
     }
 
-    public static DuckDbConfiguration Load(string addInDirectory, string? configurationFile = null)
+    public static DuckDbConfiguration Load(
+        string addInDirectory,
+        string? configurationFile = null)
     {
         var directory = Path.GetFullPath(addInDirectory);
-        var file = Path.GetFullPath(configurationFile ?? FileName, directory);
+
+        var name = string.IsNullOrWhiteSpace(configurationFile)
+            ? FileName
+            : configurationFile;
+
+        var file = Path.GetFullPath(name, directory);
+
         var options = File.Exists(file)
-            ? JsonSerializer.Deserialize<DuckDbConfiguration>(File.ReadAllText(file),
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                ?? throw new InvalidDataException($"Invalid DuckDB configuration: {file}")
+            ? JsonSerializer.Deserialize<DuckDbConfiguration>(
+                  File.ReadAllText(file),
+                  new JsonSerializerOptions
+                  {
+                      PropertyNameCaseInsensitive = true
+                  })
+              ?? throw new InvalidDataException(
+                  $"Invalid DuckDB configuration: {file}")
             : new DuckDbConfiguration();
 
         return new DuckDbConfiguration
         {
-            TempPath = Resolve(options.TempPath, directory),
-            ExtensionPath = Resolve(options.ExtensionPath, directory)
+            TempPath = Resolve(options.TempPath ?? "temp", directory),
+            ExtensionPath = Resolve(options.ExtensionPath ?? "extensions", directory)
         };
     }
 
-    private static string Resolve(string? path, string directory) =>
-        string.IsNullOrWhiteSpace(path) ? directory : Path.GetFullPath(path, directory);
+    private static string? Resolve(string? path, string directory)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? null
+            : Path.GetFullPath(path, directory);
+    }
+
 
     internal void Apply(DuckDBConnection connection, string temporaryDirectory)
     {
