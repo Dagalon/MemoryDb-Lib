@@ -10,19 +10,17 @@ public sealed class DuckDbConfiguration
     public const string FileName = "memory-db.json";
     private static DuckDbConfiguration _current = new()
     {
-        TempPath = Path.Combine(AppContext.BaseDirectory, "temp"),
-        ExtensionPath = Path.Combine(AppContext.BaseDirectory, "extensions")
+        TempPath = AppContext.BaseDirectory,
+        ExtensionPath = AppContext.BaseDirectory
     };
 
     [JsonPropertyName("temp_path")]
-    public string? TempPath { get; init; } = Path.Combine(AppContext.BaseDirectory, "temp");
+    public string? TempPath { get; init; }
 
 
     [JsonPropertyName("extension_path")]
-    public string? ExtensionPath { get; init; } = Path.Combine(AppContext.BaseDirectory, "extensions");
+    public string? ExtensionPath { get; init; }
  
-
-
     public static DuckDbConfiguration Current => Volatile.Read(ref _current);
 
     /// <summary>Loads the optional JSON file relative to the add-in directory.</summary>
@@ -50,7 +48,7 @@ public sealed class DuckDbConfiguration
 
         var file = Path.GetFullPath(name, directory);
 
-        var options = File.Exists(file)
+        var configFile = File.Exists(file)
             ? JsonSerializer.Deserialize<DuckDbConfiguration>(
                   File.ReadAllText(file),
                   new JsonSerializerOptions
@@ -63,18 +61,17 @@ public sealed class DuckDbConfiguration
 
         return new DuckDbConfiguration
         {
-            TempPath = Resolve(options.TempPath ?? "temp", directory),
-            ExtensionPath = Resolve(options.ExtensionPath ?? "extensions", directory)
+            TempPath = Resolve(configFile.TempPath, directory),
+            ExtensionPath = Resolve(configFile.ExtensionPath, directory)
         };
     }
 
-    private static string? Resolve(string? path, string directory)
+    private static string Resolve(string? path, string directory)
     {
         return string.IsNullOrWhiteSpace(path)
-            ? null
+            ? directory
             : Path.GetFullPath(path, directory);
     }
-
 
     internal void Apply(DuckDBConnection connection, string temporaryDirectory)
     {
