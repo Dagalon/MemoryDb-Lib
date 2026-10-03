@@ -12,8 +12,6 @@
     <Copyright>Copyright © 2025</Copyright>
     
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <WarningsNotAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
